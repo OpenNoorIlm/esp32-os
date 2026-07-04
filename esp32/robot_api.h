@@ -44,13 +44,15 @@ inline String forward(String q, String speed) {
   if (q.length() == 0) q = "1";
   if (speed.length() == 0) speed = "255";
   toArduino("forward(" + q + "," + speed + ")");
-  return waitReply();
+  long timeoutMs = q.toInt() * 100L + 1000L; // duration the Arduino will delay, plus margin
+  return waitReply(timeoutMs);
 }
 inline String backward(String q, String speed) {
   if (q.length() == 0) q = "1";
   if (speed.length() == 0) speed = "255";
   toArduino("backward(" + q + "," + speed + ")");
-  return waitReply();
+  long timeoutMs = q.toInt() * 100L + 1000L;
+  return waitReply(timeoutMs);
 }
 inline String right(String angle) { toArduino("right(" + angle + ")"); return waitReply(); }
 inline String left(String angle)  { toArduino("left(" + angle + ")");  return waitReply(); }

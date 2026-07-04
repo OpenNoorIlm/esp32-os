@@ -15,10 +15,16 @@ SoftwareSerial mySerial(10, 11);  // RX=10 (from ESP32 TX=17), TX=11 (to ESP32 R
 
 const int fanp     = 12;
 const int servoPin = 13;   // distance-sweep servo
-const int forward  =  3;
-const int backward =  5;
-const int right_p  =  6;
-const int left_p   =  9;
+
+// L298N Channel A = RIGHT side motors (2 wheels, paralleled)
+// L298N Channel B = LEFT side motors (2 wheels, paralleled)
+// NOTE: right side motor is mirror-mounted vs left side, so its
+// logical fwd/bwd pins are swapped in software to match rotation direction.
+const int rightFwd =  5;   // Channel A IN2 -- swapped (was IN1/"forward")
+const int rightBwd =  3;   // Channel A IN1 -- swapped (was IN2/"backward")
+const int leftFwd  =  6;   // Channel B IN3 -- was "right_p"
+const int leftBwd  =  9;   // Channel B IN4 -- was "left_p"
+
 const int usd_trig =  4;
 const int usd_echo =  7;
 
@@ -242,10 +248,10 @@ void clearDisplay_() {
 
 // ── Stop all motors ────────────────────────────────────────────────────────────
 void stopMotors() {
-  analogWrite(forward,  0);
-  analogWrite(backward, 0);
-  analogWrite(right_p,  0);
-  analogWrite(left_p,   0);
+  analogWrite(rightFwd, 0);
+  analogWrite(rightBwd, 0);
+  analogWrite(leftFwd,  0);
+  analogWrite(leftBwd,  0);
 }
 
 void replyOk() {
@@ -254,10 +260,10 @@ void replyOk() {
 
 // ── Setup ──────────────────────────────────────────────────────────────────────
 void setup() {
-  pinMode(forward,  OUTPUT);
-  pinMode(backward, OUTPUT);
-  pinMode(right_p,  OUTPUT);
-  pinMode(left_p,   OUTPUT);
+  pinMode(rightFwd, OUTPUT);
+  pinMode(rightBwd, OUTPUT);
+  pinMode(leftFwd,  OUTPUT);
+  pinMode(leftBwd,  OUTPUT);
   pinMode(fanp,     OUTPUT);
   pinMode(usd_trig, OUTPUT);
   pinMode(usd_echo, INPUT);
@@ -320,7 +326,10 @@ void loop() {
     int duration = extractMatch(recStr, 1).toInt();
     int speed    = extractMatch(recStr, 2).toInt();
     if (speed == 0) speed = 255;
-    analogWrite(forward, speed);
+    if (duration <= 0 || duration > 300) duration = 10; // sanity clamp: max 30s
+    stopMotors();
+    analogWrite(rightFwd, speed);
+    analogWrite(leftFwd,  speed);
     delay(duration * 100);
     stopMotors();
     replyOk();
@@ -329,22 +338,40 @@ void loop() {
     int duration = extractMatch(recStr, 1).toInt();
     int speed    = extractMatch(recStr, 2).toInt();
     if (speed == 0) speed = 255;
-    analogWrite(backward, speed);
+    if (duration <= 0 || duration > 300) duration = 10; // sanity clamp: max 30s
+    stopMotors();
+    analogWrite(rightBwd, speed);
+    analogWrite(leftBwd,  speed);
     delay(duration * 100);
     stopMotors();
     replyOk();
   }
   if (in(recStr, "right(")) {
+    // Tank turn right: left side forward, right side backward.
+    // angle (degrees) is converted to a drive duration using MS_PER_DEGREE --
+    // test with e.g. "robot right 90" and measure actual rotation, then
+    // adjust MS_PER_DEGREE below until 90 in = ~90 degrees actual turn.
+    const float MS_PER_DEGREE = 6.0;
+    const int   TURN_SPEED    = 200; // fixed -- low PWM may not overcome motor friction
     int angle = extractMatch(recStr, 1).toInt();
-    analogWrite(right_p, angle);
-    delay(500);
+    int turnMs = (int)(angle * MS_PER_DEGREE);
+    stopMotors();
+    analogWrite(leftFwd,  TURN_SPEED);
+    analogWrite(rightBwd, TURN_SPEED);
+    delay(turnMs);
     stopMotors();
     replyOk();
   }
   if (in(recStr, "left(")) {
+    // Tank turn left: left side backward, right side forward.
+    const float MS_PER_DEGREE = 6.0;
+    const int   TURN_SPEED    = 200;
     int angle = extractMatch(recStr, 1).toInt();
-    analogWrite(left_p, angle);
-    delay(500);
+    int turnMs = (int)(angle * MS_PER_DEGREE);
+    stopMotors();
+    analogWrite(leftBwd,  TURN_SPEED);
+    analogWrite(rightFwd, TURN_SPEED);
+    delay(turnMs);
     stopMotors();
     replyOk();
   }

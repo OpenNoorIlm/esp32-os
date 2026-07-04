@@ -200,6 +200,15 @@ int main(int argc, char** argv) {
     } else if (line == "Send: SETPASS <newpassword>") {
       std::string newPass = readHiddenPassword("New NoorShell password: ");
       conn.sendLine("SETPASS " + newPass);
+    } else if (line.rfind("ASK ", 0) == 0) {
+      // Generic one-line question/answer: print the question (no newline),
+      // read one line of plain-text input, send it back. Used for things
+      // like the storage backend choice and the untrusted-source [Y/n] gate.
+      std::cout << line.substr(strlen("ASK "));
+      std::cout.flush();
+      std::string answer;
+      if (!std::getline(std::cin, answer)) break;
+      if (!conn.sendLine(answer)) { std::cout << "\nConnection lost.\n"; break; }
     } else {
       std::cout << line << "\n";
     }
