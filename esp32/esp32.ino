@@ -1,210 +1,54 @@
 #include <WiFi.h>
 #include <WebServer.h>
-#include <HardwareSerial.h>
 #include <ESP32Servo.h>
 
-const char* ssid     = "Galaxy A32 7E93";
-const char* password = "rlis4727";
+#include "capability.h"
+#include "wifi_manager.h"
+#include "fs_manager.h"
+#include "robot_api.h"
+#include "shell_server.h"
 
-// ESP32 listens on port 8083, ESP32-CAM on 8082
+// Existing robot HTTP API -- unchanged routes/port, now backed by the
+// shared RobotApi:: functions also used by the "robot" shell command.
 WebServer server(8083);
 
-// UART2: RX=16, TX=17 → Arduino pin 10(RX)/11(TX)
-HardwareSerial ArduinoSerial(2);
-
-// ── Helper: forward command string to Arduino ─────────────────────────────────
-void toArduino(const String& cmd) {
-  ArduinoSerial.println(cmd);
-}
-
-// Strip anything that isn't a printable ASCII character (or tab) so a
-// glitchy/garbled UART frame can never reach the browser as raw binary,
-// which is what makes it show up as an undisplayable "download".
-String sanitizeReply(const String& raw) {
-  String clean;
-  clean.reserve(raw.length());
-  for (size_t i = 0; i < raw.length(); i++) {
-    char c = raw[i];
-    if ((c >= 32 && c <= 126) || c == '\t') {
-      clean += c;
-    }
-  }
-  clean.trim();
-  if (clean.length() == 0) {
-    return "error: garbled reply from Arduino";
-  }
-  return clean;
-}
-
-String waitArduinoReply(unsigned long timeoutMs = 2000) {
-  unsigned long start = millis();
-  while (millis() - start < timeoutMs) {
-    if (ArduinoSerial.available()) {
-      String raw = ArduinoSerial.readStringUntil('\n');
-      return sanitizeReply(raw);
-    }
-  }
-  return "timeout";
-}
-
-// ── Route handlers ────────────────────────────────────────────────────────────
-void handleForward() {
-  String q     = server.arg("q");
-  String speed = server.arg("speed");
-  if (q.length() == 0)     q     = "1";
-  if (speed.length() == 0) speed = "255";
-  toArduino("forward(" + q + "," + speed + ")");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleBackward() {
-  String q     = server.arg("q");
-  String speed = server.arg("speed");
-  if (q.length() == 0)     q     = "1";
-  if (speed.length() == 0) speed = "255";
-  toArduino("backward(" + q + "," + speed + ")");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleRight() {
-  String angle = server.arg("q");
-  toArduino("right(" + angle + ")");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleLeft() {
-  String angle = server.arg("q");
-  toArduino("left(" + angle + ")");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleStop() {
-  toArduino("stop(1)");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleDistance() {
-  String angle = server.arg("q");
-  toArduino("distance(" + angle + ")");
-  String reply = waitArduinoReply(2000);
-  server.send(200, "text/plain", reply);
-}
-
-void handleTemperature() {
-  String unit = server.arg("q");
-  toArduino("temperature(" + unit + ")");
-  String reply = waitArduinoReply(2000);
-  server.send(200, "text/plain", reply);
-}
-
-void handleTemperatureEsp32() {
-  float t = temperatureRead();
-  server.send(200, "text/plain", String(t));
-}
+void handleForward()  { server.send(200, "text/plain", RobotApi::forward(server.arg("q"), server.arg("speed"))); }
+void handleBackward() { server.send(200, "text/plain", RobotApi::backward(server.arg("q"), server.arg("speed"))); }
+void handleRight()    { server.send(200, "text/plain", RobotApi::right(server.arg("q"))); }
+void handleLeft()     { server.send(200, "text/plain", RobotApi::left(server.arg("q"))); }
+void handleStop()     { server.send(200, "text/plain", RobotApi::stop()); }
+void handleDistance() { server.send(200, "text/plain", RobotApi::distance(server.arg("q"))); }
+void handleTemperature()      { server.send(200, "text/plain", RobotApi::temperature(server.arg("q"))); }
+void handleTemperatureEsp32() { server.send(200, "text/plain", String(temperatureRead())); }
+void handleFan()   { server.send(200, "text/plain", RobotApi::fan(server.arg("q"))); }
+void handleClear() { server.send(200, "text/plain", RobotApi::clearCmd()); }
+void handleEyes()  { server.send(200, "text/plain", RobotApi::eyes(server.arg("q"))); }
+void handleShutdown() { RobotApi::shutdown(); server.send(200, "text/plain", "ok"); }
+void handleShutdownBySeconds() { RobotApi::shutdownBySeconds(server.arg("q")); server.send(200, "text/plain", "ok"); }
+void handleShutdownByTime()    { RobotApi::shutdownByTime(server.arg("q"));    server.send(200, "text/plain", "ok"); }
+void handleShutOn() { RobotApi::shutOn(); server.send(200, "text/plain", "ok"); }
+void handleShutOnBySeconds() { RobotApi::shutOnBySeconds(server.arg("q")); server.send(200, "text/plain", "ok"); }
+void handleShutOnByTime()    { RobotApi::shutOnByTime(server.arg("q"));    server.send(200, "text/plain", "ok"); }
 
 void handleHelp() {
   String msg =
-    "NoorRobot ESP32 API\n"
-    "-------------------\n"
-    "/forward?q=<1|0>&speed=<0-255>\n"
-    "/backward?q=<1|0>&speed=<0-255>\n"
-    "/right?q=<angle>\n"
-    "/left?q=<angle>\n"
-    "/stop\n"
-    "/distance?q=<angle>\n"
-    "/temperature?q=<unit>        (from Arduino sensor)\n"
-    "/temperature_esp32           (ESP32 internal temp)\n"
-    "/fan?q=<on|off|status>\n"
-    "/clear\n"
-    "/eyes?q=<pattern>\n"
-    "/shutdown\n"
-    "/shutdownbyseconds?q=<seconds>\n"
-    "/shutdownbytime?q=<time>\n"
-    "/shuton\n"
-    "/shutonbyseconds?q=<seconds>\n"
-    "/shutonbytime?q=<time>\n"
-    "/help                        (this message)\n";
+    "NoorRobot ESP32 API\n-------------------\n"
+    "/forward?q=<1|0>&speed=<0-255>\n/backward?q=<1|0>&speed=<0-255>\n"
+    "/right?q=<angle>\n/left?q=<angle>\n/stop\n/distance?q=<angle>\n"
+    "/temperature?q=<unit>\n/temperature_esp32\n/fan?q=<on|off|status>\n"
+    "/clear\n/eyes?q=<pattern>\n/shutdown\n/shutdownbyseconds?q=<s>\n"
+    "/shutdownbytime?q=<t>\n/shuton\n/shutonbyseconds?q=<s>\n/shutonbytime?q=<t>\n"
+    "/help\n\nAlso available: NoorShell on TCP port " + String(SHELL_PORT) + "\n";
   server.send(200, "text/plain", msg);
-}
-
-void handleFan() {
-  String q = server.arg("q");
-  if (q == "on") {
-    toArduino("fan on");
-  } else if (q == "off") {
-    toArduino("fan off");
-  } else if (q == "status") {
-    toArduino("fan status");
-    String reply = waitArduinoReply();
-    server.send(200, "text/plain", reply);
-    return;
-  }
-  server.send(200, "text/plain", "ok");
-}
-
-void handleClear() {
-  toArduino("clear(1)");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleEyes() {
-  String q = server.arg("q");
-  toArduino("eyes(" + q + ")");
-  String reply = waitArduinoReply();
-  server.send(200, "text/plain", reply);
-}
-
-void handleShutdown() {
-  toArduino("shutdown(True)");
-  server.send(200, "text/plain", "ok");
-}
-
-void handleShutdownBySeconds() {
-  String q = server.arg("q");
-  toArduino("shutdownbyseconds(" + q + ")");
-  server.send(200, "text/plain", "ok");
-}
-
-void handleShutdownByTime() {
-  String q = server.arg("q");
-  toArduino("shutdownbytime(" + q + ")");
-  server.send(200, "text/plain", "ok");
-}
-
-void handleShutOn() {
-  toArduino("shuton(True)");
-  server.send(200, "text/plain", "ok");
-}
-
-void handleShutOnBySeconds() {
-  String q = server.arg("q");
-  toArduino("shutonbyseconds(" + q + ")");
-  server.send(200, "text/plain", "ok");
-}
-
-void handleShutOnByTime() {
-  String q = server.arg("q");
-  toArduino("shutonbytime(" + q + ")");
-  server.send(200, "text/plain", "ok");
 }
 
 void setup() {
   Serial.begin(115200);
-  ArduinoSerial.begin(9600, SERIAL_8N1, 16, 17);  // RX=16, TX=17
+  RobotApi::begin();
 
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("\nConnected: " + WiFi.localIP().toString());
+  WifiManager::connectOrSetup();   // blocks until connected, or enters AP setup mode
+  FsManager::begin();
+  ShellServer::begin();
 
   server.on("/forward",           handleForward);
   server.on("/backward",          handleBackward);
@@ -226,9 +70,27 @@ void setup() {
   server.on("/help",              handleHelp);
 
   server.begin();
-  Serial.println("ESP32 HTTP server started on port 8083");
+  Serial.println("Robot HTTP API on port 8083");
+  Serial.println("NoorShell on port " + String(SHELL_PORT));
+
+  // IP is printed on the ESP32's own main UART0 (TX0/RX0 -- the same
+  // pins used for USB/programming), NOT on ArduinoSerial (UART2,
+  // RX=16/TX=17 in robot_api.h) which is reserved for talking to the
+  // companion Arduino board.
+  Serial.println("========================================");
+  Serial.println("ESP32 IP (main UART0 TX0/RX0): " + WiFi.localIP().toString());
+  Serial.println("========================================");
 }
 
 void loop() {
   server.handleClient();
+  ShellServer::loop();
+
+  // Re-print the IP on main UART0 every 30s so it's always easy to find
+  // on the ESP32's own serial line without needing to reset the board.
+  static unsigned long lastIpPrint = 0;
+  if (millis() - lastIpPrint >= 30000) {
+    lastIpPrint = millis();
+    Serial.println("IP: " + WiFi.localIP().toString());
+  }
 }

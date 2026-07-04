@@ -1,0 +1,3 @@
+C:/Users/bismi/Downloads/NoorRobot-system/esp32-ssh/build/CMakeFiles/esp32-ssh.dir
+C:/Users/bismi/Downloads/NoorRobot-system/esp32-ssh/build/CMakeFiles/edit_cache.dir
+C:/Users/bismi/Downloads/NoorRobot-system/esp32-ssh/build/CMakeFiles/rebuild_cache.dir
