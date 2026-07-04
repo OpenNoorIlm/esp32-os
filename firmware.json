@@ -1,0 +1,4 @@
+{
+  "version": "0.1.0",
+  "bin": "esp32/build/espressif.esp32.esp32/esp32.ino.bin"
+}
