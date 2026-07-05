@@ -123,6 +123,10 @@ CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Vis
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\locale.h"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\string"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\socket_compat.h
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock2.h"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h"
@@ -343,8 +347,20 @@ CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\ws2ipdef.h"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\in6addr.h"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.h
-CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector"
-CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\config_store.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\direct.h"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\python_finder.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\algorithm"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\process_launch.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\exe_path.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\app_config.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\dependency_installer.h
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\map"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree"
+CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h"
 CMakeFiles\esp32-ssh.dir\src\main.cpp.obj: "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\conio.h"
 
 
@@ -485,15 +501,25 @@ CMakeFiles\esp32-ssh.dir\src\sha256.cpp.obj: "C:\Program Files (x86)\Microsoft V
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\iomanip":
 
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream":
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtree":
+
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\dependency_installer.h:
+
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\app_config.h:
+
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\process_launch.h:
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_heap_algorithms.hpp":
 
-C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\python_finder.h:
 
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp":
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\direct.h":
 
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector":
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\sstream":
+
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\config_store.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\in6addr.h":
 
@@ -513,11 +539,15 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\commdlg.h":
 
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleauto.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidl.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h":
+
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\ostream":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\ctype.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock2.h":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_xlocinfo_types.hpp":
 
@@ -537,6 +567,10 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\time.h":
 
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\nb30.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error":
+
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\ctime":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\xtimec.h":
@@ -546,6 +580,8 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\securitybaseapi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\stdio.h":
+
+C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\exe_path.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wstring.h":
 
@@ -590,12 +626,6 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.cpp:
 C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\sha256.h:
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\crtdefs.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h":
-
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h":
-
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_system_error_abi.hpp":
 
@@ -643,10 +673,6 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\socket_compat.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\math.h":
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h":
-
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h":
-
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\memory":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wtime.h":
@@ -674,6 +700,8 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\socket_compat.h:
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_minmax.hpp":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\crtdbg.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vector":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\exception":
 
@@ -705,9 +733,9 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\socket_compat.h:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_math.h":
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\servprov.h":
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\consoleapi3.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\map":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ddeml.h":
 
@@ -753,6 +781,8 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\concurrencysal.h":
 
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_bit_utils.hpp":
+
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\cctype":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\unknwnbase.h":
@@ -770,6 +800,8 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\lzexpand.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\rpcnsi.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_filebuf.hpp":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_share.h":
 
@@ -803,6 +835,12 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\ioapiset.h":
 
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_typeinfo.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\__msvc_threads_core.hpp":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\windows.h":
+
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\vcruntime_string.h":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\cwchar":
@@ -828,6 +866,12 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_wprocess.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\poppack.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winsock2.h":
+
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\sal.h":
+
+"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\wingdi.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\windef.h":
 
@@ -867,17 +911,15 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\pshpack4.h":
 
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\xnode_handle.h":
+
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\malloc.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\apiset.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\winbase.h":
 
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\oleauto.h":
-
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\minwinbase.h":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\propidl.h":
 
 "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\smmintrin.h":
 
@@ -963,6 +1005,8 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\cguid.h":
 
+"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\fstream":
+
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\urlmon.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\shared\winapifamily.h":
@@ -994,10 +1038,6 @@ C:\Users\bismi\Downloads\NoorRobot-system\esp32-ssh\src\main.cpp:
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dde.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\timeapi.h":
-
-"C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Tools\MSVC\14.44.35207\include\system_error":
-
-"C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\nb30.h":
 
 "C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\um\dpapi.h":
 

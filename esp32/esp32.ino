@@ -7,6 +7,7 @@
 #include "fs_manager.h"
 #include "robot_api.h"
 #include "shell_server.h"
+#include "task_manager.h"
 
 // Existing robot HTTP API -- unchanged routes/port, now backed by the
 // shared RobotApi:: functions also used by the "robot" shell command.
@@ -49,6 +50,9 @@ void setup() {
   WifiManager::connectOrSetup();   // blocks until connected, or enters AP setup mode
   FsManager::begin();
   ShellServer::begin();
+  TaskManager::begin(ShellServer::runCommand); // lets bg/close/kill re-enter the
+                                                // shell command dispatcher on a
+                                                // background FreeRTOS task
 
   server.on("/forward",           handleForward);
   server.on("/backward",          handleBackward);

@@ -6,6 +6,7 @@
 #include <LittleFS.h>
 #include <vector>
 #include "fs_manager.h"
+#include "task_manager.h"
 
 // Handles two install surfaces:
 //   apt           -- system packages, official repo: OpenNoorIlm/esp32-os-packages
@@ -164,6 +165,11 @@ inline int installTreeFromGithubDir(const String& repo, const String& pkgPath,
 
   int count = 0;
   for (JsonObject entry : doc.as<JsonArray>()) {
+    if (TaskManager::shouldCancelNow()) {
+      out.println("cancelled.");
+      out.flush();
+      return count;
+    }
     String name = entry["name"].as<String>();
     String type = entry["type"].as<String>();
     if (name.length() == 0) continue;
@@ -376,6 +382,7 @@ inline void checkForUpdates(const String& repo, const String& destRoot,
     String line = raw.substring(start, nl);
     start = nl + 1;
     if (!line.startsWith("d ")) continue;
+    if (TaskManager::shouldCancelNow()) { out.println("cancelled."); out.flush(); return; }
     checked++;
     String name = line.substring(2);
     String dest = destRoot + "/" + name;
@@ -413,6 +420,11 @@ inline void upgradeAll(const String& repo, const String& destRoot, Print& out) {
   out.println("\nUpgrading " + String(outdated.size()) + " package(s)...");
   out.flush();
   for (const String& name : outdated) {
+    if (TaskManager::shouldCancelNow()) {
+      out.println("cancelled.");
+      out.flush();
+      return;
+    }
     out.println("-- " + name + " --");
     out.flush();
     installOfficial(repo, name, destRoot, out);

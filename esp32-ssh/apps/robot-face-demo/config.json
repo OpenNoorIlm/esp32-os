@@ -1,0 +1,8 @@
+{
+  "name": "robot-face-demo",
+  "version": "1.0.0",
+  "description": "Example CLIENT GUI app for esp32-ssh -- demonstrates the lua, device, and oled bridge packages from a PyQt5 interface.",
+  "entry": "main.py",
+  "python": "3.10",
+  "uses_packages": ["lua", "device", "oled"]
+}

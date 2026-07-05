@@ -97,7 +97,21 @@ inline String shellCommand(const String& rest) {
   if (sub == "temperature") return temperature(a1);
   if (sub == "fan")         return fan(a1);
   if (sub == "clear")       return clearCmd();
-  if (sub == "eyes")        return eyes(a1);
+  if (sub == "eyes") {
+    // eyes() on the Arduino side expects one comma-joined string,
+    // "type,x,y" -- but the shell only ever split off a1/a2 above, so an
+    // x/y offset typed as "robot eyes Happy 10 20" was silently dropped
+    // (a2 held "10 20" as one unsplit chunk, a3 never existed). Split a2
+    // once more here so all three positional args actually reach the eye
+    // renderer instead of just the expression name.
+    int sp3 = a2.indexOf(' ');
+    String ex = sp3 == -1 ? a2 : a2.substring(0, sp3);
+    String ey = sp3 == -1 ? ""  : a2.substring(sp3 + 1);
+    String q = a1;
+    if (ex.length()) q += "," + ex;
+    if (ey.length()) q += "," + ey;
+    return eyes(q);
+  }
   if (sub == "shutdown")    { shutdown(); return "ok"; }
   if (sub == "shuton")      { shutOn();   return "ok"; }
   return "error: unknown robot subcommand '" + sub + "'";

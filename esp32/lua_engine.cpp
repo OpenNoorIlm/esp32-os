@@ -16,6 +16,7 @@
 #include "robot_api.h"
 #include "package_manager.h"
 #include "capability.h"
+#include "task_manager.h"
 #include <WiFi.h>
 
 // IMPORTANT: all Arduino/C++ headers above MUST be included before Lua's
@@ -39,22 +40,51 @@ extern "C" {
 namespace LuaEngine {
 
 static lua_State* L = nullptr;
-static String outputBuffer;
 
-// Overrides Lua's global print() to append into outputBuffer instead of
-// writing to stdio -- there's no real terminal attached to this VM, the
-// NoorShell TCP client is the only "console" and it only sees whatever
-// eval() returns.
+// Overrides Lua's global print() to stream straight to whichever live
+// Print& is currently running the script (the NoorShell TCP client) instead
+// of buffering into a String that only gets flushed once the whole script
+// finishes. This matters a lot for `run <app>`: an app like the tiny
+// transformer runtime can take seconds per token, and a buffered print()
+// would leave the terminal looking dead the entire time instead of showing
+// output as it's actually generated.
+//
+// liveOut is only non-null for the duration of a single eval()/runApp()
+// call (set at the top, cleared before returning) -- there is exactly one
+// shell session at a time (see ShellServer::loop()), so this simple global
+// is safe and avoids threading a Print& through every single Lua binding.
+static Print* liveOut = nullptr;
+static bool didPrint = false; // did this eval/runApp call print() at least once
+
+// Guards against two lua_State entries at once: the state (and liveOut
+// above) is a single shared global, not thread-safe, so a background job
+// running "lua"/"run" and a foreground "lua"/"run" in the interactive
+// shell must never both be inside luaL_dostring() at the same time.
+static volatile bool busy = false;
+
+// Cooperative cancellation checkpoint, installed as a Lua debug hook (see
+// runChunk below) so a background job's `close <name>` can interrupt a
+// running script between VM instructions instead of only being able to
+// stop it before/after a whole chunk runs. Uses shouldCancelNow() (not the
+// raw flag) so this can never misfire against an unrelated foreground
+// lua/run command -- see task_manager.h for why that distinction matters.
+static void cancelHook(lua_State* Ls, lua_Debug* ar) {
+  if (TaskManager::shouldCancelNow()) {
+    luaL_error(Ls, "cancelled"); // unwinds via lua_error, caught below
+  }
+}
+
 static int capturePrint(lua_State* Lstate) {
   int n = lua_gettop(Lstate);
+  didPrint = true;
   for (int i = 1; i <= n; i++) {
     size_t len;
     const char* s = luaL_tolstring(Lstate, i, &len);
-    outputBuffer += s;
+    if (liveOut) liveOut->print(s);
     lua_pop(Lstate, 1); // pop the tostring() result pushed by luaL_tolstring
-    if (i < n) outputBuffer += "\t";
+    if (i < n && liveOut) liveOut->print("\t");
   }
-  outputBuffer += "\n";
+  if (liveOut) { liveOut->println(); liveOut->flush(); }
   return 0;
 }
 
@@ -289,18 +319,61 @@ void begin() {
   lua_setglobal(L, "esp32");
 }
 
-String eval(const String& code) {
+// Shared runner: executes one chunk of Lua source with print() streaming
+// live to `out`, used by both eval() (raw "lua <code>" shell command) and
+// runApp() (reads an app's main.lua first, then hands it the same source).
+static String runChunk(const String& src, Print& out) {
   if (!L) begin();
   if (!L) return "error: could not allocate Lua state (out of memory)";
+  if (busy) return "error: lua engine busy (a background job is currently running lua code)";
+  busy = true;
 
-  outputBuffer = "";
-  int status = luaL_dostring(L, code.c_str());
+  liveOut = &out;
+  didPrint = false;
+  // Check for cancellation every 1000 VM instructions -- frequent enough
+  // that `close` on a background lua job feels near-immediate, rare
+  // enough that the overhead is not worth worrying about.
+  lua_sethook(L, cancelHook, LUA_MASKCOUNT, 1000);
+  int status = luaL_dostring(L, src.c_str());
+  lua_sethook(L, nullptr, 0, 0); // clear so it never leaks into an unrelated later call
+  liveOut = nullptr; // always clear -- luaL_dostring is protected (lua_pcall
+                      // under the hood), so it returns normally even on a
+                      // Lua-side error instead of longjmp'ing past this line.
+  busy = false;
+
   if (status != LUA_OK) {
     String err = "lua error: " + String(lua_tostring(L, -1));
     lua_pop(L, 1); // pop the error message off the stack
-    return outputBuffer + err;
+    return err;
   }
-  return outputBuffer.length() ? outputBuffer : "ok";
+  // Output (if any) already streamed live via out during execution -- only
+  // fall back to a friendly status line when the script printed nothing at
+  // all, so a silent script (or one that just calls esp32.* side effects)
+  // doesn't leave the shell looking like it hung.
+  return didPrint ? "" : "ok";
+}
+
+String eval(const String& code, Print& out) {
+  return runChunk(code, out);
+}
+
+String runApp(const String& appName, Print& out) {
+  if (appName.length() == 0) return "error: run needs an app name, e.g. run esp32-cpp";
+
+  String path = "/apps/" + appName + "/main.lua";
+  if (!FsManager::activeFs().exists(path))
+    return "error: '" + appName + "' is not installed (no " + path + " found -- "
+           "check 'app-installer list --installed')";
+
+  String src = FsManager::cat(path);
+  if (src.length() == 0 || src.startsWith("error:"))
+    return "error: could not read " + path;
+
+  String result = runChunk(src, out);
+  return result == "ok" ? "" : result; // "run" itself doesn't need the "ok" filler
+                                        // eval() prints for bare one-liners --
+                                        // an app finishing with no output is
+                                        // just normal, silent completion.
 }
 
 } // namespace LuaEngine

@@ -10,6 +10,7 @@
 #include "package_manager.h"
 #include "os_manager.h"
 #include "lua_engine.h"
+#include "task_manager.h"
 #include <vector>
 
 #define SHELL_PORT 2222
@@ -159,9 +160,64 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
     return out;
   }
   if (cmd == "robot")   return RobotApi::shellCommand(rest);
+
+  // Direct alias onto the same eye-display driven by the companion Arduino
+  // -- exists so client-side GUI apps (via the Python `oled` package) get
+  // a command literally named `oled` rather than needing to know the OLED
+  // is implemented as a subset of `robot`. Same underlying calls either way.
+  if (cmd == "oled") {
+    int sp2 = rest.indexOf(' ');
+    String sub  = sp2 == -1 ? rest : rest.substring(0, sp2);
+    String args = sp2 == -1 ? ""   : rest.substring(sp2 + 1);
+    if (sub == "clear") return RobotApi::clearCmd();
+    if (sub == "eyes")  return RobotApi::shellCommand("eyes " + args);
+    return "error: unknown oled subcommand '" + sub + "' (try: eyes <type> [x] [y], clear)";
+  }
   if (cmd == "lua") {
     if (rest.length() == 0) return "error: lua needs code, e.g. lua print(1+1)";
-    return LuaEngine::eval(rest);
+    return LuaEngine::eval(rest, out); // print() streams live via out
+  }
+
+  // Runs an installed app's /apps/<name>/main.lua entrypoint -- the actual
+  // execution mechanism app-installer/apt only ever set up the files for.
+  // Equivalent to: lua load(esp32.fs.cat("/apps/<name>/main.lua"))()
+  // but as one command, with print() streaming live instead of buffering
+  // until the whole script finishes (matters for slow apps).
+  if (cmd == "run") {
+    if (rest.length() == 0) return "error: run needs an app name, e.g. run esp32-cpp";
+    return LuaEngine::runApp(rest, out);
+  }
+
+  // ── background job control (bg/jobs/close/kill/job-output) ─────────────
+  // A SINGLE background job slot -- see task_manager.h's namespace comment
+  // for why this doesn't queue or run multiple jobs concurrently. Covers
+  // anything runCommand() itself can run: lua code, an installed app (run),
+  // and apt/app-installer install/upgrade -- since bg just re-enters this
+  // very function with the given command line, on a separate FreeRTOS task.
+  if (cmd == "bg") {
+    if (rest.length() == 0)
+      return "error: bg needs a command to run in the background, e.g. bg run myapp";
+    // Auto-named from the first word of the command + a short timestamp --
+    // purely a human-friendly target for close/kill/job-output, not meant
+    // to be globally unique (there's only ever one job slot anyway, so a
+    // second 'bg' while one is running is rejected up front).
+    int sp2 = rest.indexOf(' ');
+    String firstWord = sp2 == -1 ? rest : rest.substring(0, sp2);
+    String jobName = firstWord + "-" + String(millis() % 100000);
+    return TaskManager::start(jobName, rest);
+  }
+  if (cmd == "jobs") return TaskManager::status();
+  if (cmd == "close") {
+    if (rest.length() == 0) return "error: close needs a job name, e.g. close run-45213 (see 'jobs')";
+    return TaskManager::close(rest);
+  }
+  if (cmd == "kill") {
+    if (rest.length() == 0) return "error: kill needs a job name, e.g. kill run-45213 (see 'jobs')";
+    return TaskManager::kill(rest);
+  }
+  if (cmd == "job-output") {
+    if (rest.length() == 0) return "error: job-output needs a job name (see 'jobs')";
+    return TaskManager::output(rest);
   }
 
   if (cmd == "wifi") {
@@ -416,6 +472,17 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
            "curl [-X <method>] [-H \"K: V\"] [-d <body>] [-A <ua>] [-I] [-L] [-s] "
            "[-o <file>] <url>  (or: curl <url> | app|package to install), "
            "lua <code>, "
+           "oled eyes <type> [x] [y]|clear  (Normal/Happy/Sad/Angry/Surprised/"
+           "Cry/Love/Sleepy/Confused/Excited/Dizzy/Bored/Evil/Shy/Cool/Wink/"
+           "Dead/Nervous), "
+           "run <appname>  (runs /apps/<appname>/main.lua -- for apps installed "
+           "via app-installer), "
+           "bg <command>  (runs any of the above -- lua/run/apt/app-installer -- "
+           "in the background; one job slot at a time), "
+           "jobs  (status of the current/last background job), "
+           "close <jobname>|kill <jobname>  (stop the background job -- close waits "
+           "for its next safe checkpoint, kill is immediate and skips cleanup), "
+           "job-output <jobname>  (see what the background job has printed so far), "
            "password --set-password, exit";
   }
 
