@@ -1,4 +1,5 @@
 #pragma once
+#include "sensor_manager.h"
 #include <Arduino.h>
 #include <HardwareSerial.h>
 
@@ -57,8 +58,14 @@ inline String backward(String q, String speed) {
 inline String right(String angle) { toArduino("right(" + angle + ")"); return waitReply(); }
 inline String left(String angle)  { toArduino("left(" + angle + ")");  return waitReply(); }
 inline String stop()              { toArduino("stop(1)");              return waitReply(); }
-inline String distance(String angle)   { toArduino("distance(" + angle + ")");    return waitReply(2000); }
-inline String temperature(String unit) { toArduino("temperature(" + unit + ")"); return waitReply(2000); }
+inline String distance(String angle) {
+  float d = SensorManager::distanceAtAngle(angle.toInt());
+  return String(d, 1);
+}
+inline String temperature(String unit) {
+  if (unit == "f" || unit == "F") return String(SensorManager::tempF(), 1);
+  return String(SensorManager::tempC(), 1);
+}
 inline String fan(String q) {
   if (q == "on") toArduino("fan on");
   else if (q == "off") toArduino("fan off");

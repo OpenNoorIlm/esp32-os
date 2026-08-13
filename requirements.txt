@@ -1,0 +1,62 @@
+# NoorRobot Arduino Library Requirements
+# Install all of these via Arduino IDE Library Manager or arduino-cli
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── TFT Display (ILI9341 2.8") ────────────────────────────────────────────────
+TFT_eSPI                          # by Bodmer — main TFT driver
+# IMPORTANT: After installing TFT_eSPI, edit User_Setup.h in the library folder:
+#   #define ILI9341_DRIVER
+#   #define TFT_CS   15
+#   #define TFT_DC    2
+#   #define TFT_RST   4
+#   #define TFT_MOSI 23
+#   #define TFT_MISO 19
+#   #define TFT_SCLK 18
+
+# ── Touch (XPT2046) ───────────────────────────────────────────────────────────
+XPT2046_Touchscreen               # by Paul Stoffregen
+
+# ── Sensors ───────────────────────────────────────────────────────────────────
+DHT sensor library                # by Adafruit — for DHT11 temp/humidity
+Adafruit Unified Sensor           # by Adafruit — required by DHT library
+ESP32Servo                        # by Kevin Harrington — servo on ESP32
+
+# ── JSON (Quran API + config parsing) ────────────────────────────────────────
+ArduinoJson                       # by Benoit Blanchon — version 6.x recommended
+
+# ── WiFi / HTTP (built into ESP32 core, no separate install needed) ───────────
+# WiFi.h         — built in
+# HTTPClient.h   — built in
+# WiFiClientSecure.h — built in
+# SPIFFS.h       — built in
+
+# ── Audio (PAM8403 amp — no library needed, direct PWM/DAC) ──────────────────
+# ESP32 DAC is used directly via dacWrite() — no library needed
+
+# ── Arduino core (must be installed in Arduino IDE board manager) ─────────────
+# Board: esp32 by Espressif Systems — version 2.x or 3.x
+# Board URL: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+# Select board: "ESP32 Dev Module"
+# For ESP32-CAM: Select "AI Thinker ESP32-CAM"
+# For Arduino Uno: Standard Arduino AVR core (already built in)
+
+# ── Arduino Uno libraries (for arduino.ino) ───────────────────────────────────
+# SoftwareSerial — built into Arduino IDE (no install needed)
+# NOTE: Adafruit SSD1306 and Adafruit GFX are NO LONGER needed
+#       (OLED removed, replaced by TFT on ESP32 side)
+#       Servo.h is also NO LONGER needed (moved to ESP32)
+
+# ── Lua (embedded — already in lua_src/) ─────────────────────────────────────
+# Source: https://github.com/lua/lua
+# Already bundled in esp32/lua_src/lua.zip and esp32/lua_src/lua-master/
+# NO separate install needed — compiled directly into the sketch
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Quick install via arduino-cli:
+#   arduino-cli lib install "TFT_eSPI"
+#   arduino-cli lib install "XPT2046_Touchscreen"
+#   arduino-cli lib install "DHT sensor library"
+#   arduino-cli lib install "Adafruit Unified Sensor"
+#   arduino-cli lib install "ESP32Servo"
+#   arduino-cli lib install "ArduinoJson"
+# ─────────────────────────────────────────────────────────────────────────────

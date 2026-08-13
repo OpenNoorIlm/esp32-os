@@ -6,7 +6,17 @@
 #include "capability.h"
 #include "fs_manager.h"
 #include "wifi_manager.h"
+#include "sensor_manager.h"
 #include "robot_api.h"
+#include "driver_manager.h"
+#include "nano_editor.h"
+#include "lua_widgets.h"
+#include "lua_auto.h"
+#include "apps/quran.h"
+#include "apps/browser.h"
+#include "apps/painter.h"
+#include "apps/taskmanager.h"
+#include "apps/browser.h"
 #include "package_manager.h"
 #include "os_manager.h"
 #include "lua_engine.h"
@@ -160,6 +170,25 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
     return out;
   }
   if (cmd == "robot")   return RobotApi::shellCommand(rest);
+  if (cmd == "sensor")   return SensorManager::shellCmd(rest);
+  if (cmd == "quran")    return QuranApp::shellCmd(rest);
+  if (cmd == "browse")   return Browser::shellCmd(rest);
+  if (cmd == "paint")    return PainterApp::shellCmd(rest);
+  if (cmd == "taskman")  return TaskManagerApp::shellCmd(rest);
+  if (cmd == "ps")       return TaskManagerApp::shellCmd("ps");
+  if (cmd == "kill")     return TaskManagerApp::shellCmd("kill " + rest);
+  if (cmd == "driver")   return DriverManager::shellCmd(rest);
+  if (cmd == "os")       return DriverManager::osCmd(rest);
+  if (cmd == "nano") {
+    String path = FsManager::resolve(rest);
+    String sid  = client.remoteIP().toString();
+    return NanoEditor::nanoOpen(path, sid);
+  }
+  if (cmd == "tedit")    return NanoEditor::shellCmd(rest);
+  if (cmd == "theme") {
+    NoorUI::setTheme(rest);
+    return "Theme set to " + rest + "\n";
+  }
 
   // Direct alias onto the same eye-display driven by the companion Arduino
   // -- exists so client-side GUI apps (via the Python `oled` package) get

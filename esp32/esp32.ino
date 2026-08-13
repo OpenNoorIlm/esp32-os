@@ -8,6 +8,16 @@
 #include "robot_api.h"
 #include "shell_server.h"
 #include "task_manager.h"
+#include "sensor_manager.h"
+#include "driver_manager.h"
+#include "nano_editor.h"
+#include "lua_widgets.h"
+#include "lua_auto.h"
+#include "tft_manager.h"
+#include "apps/quran.h"
+#include "apps/browser.h"
+#include "apps/painter.h"
+#include "apps/taskmanager.h"
 
 // Existing robot HTTP API -- unchanged routes/port, now backed by the
 // shared RobotApi:: functions also used by the "robot" shell command.
@@ -73,6 +83,13 @@ void setup() {
   server.on("/shutonbytime",      handleShutOnByTime);
   server.on("/help",              handleHelp);
 
+  SensorManager::begin();
+  DriverManager::loadAll();  // load editable.dvr + all installed drivers
+  TftManager::begin();
+  TftManager::setTouchCallback([](String cmd) {
+    ShellServer::runCommand("robot " + cmd + " 1");
+  });
+
   server.begin();
   Serial.println("Robot HTTP API on port 8083");
   Serial.println("NoorShell on port " + String(SHELL_PORT));
@@ -89,6 +106,16 @@ void setup() {
 void loop() {
   server.handleClient();
   ShellServer::loop();
+  SensorManager::loop();
+  TaskManagerApp::samplePerf();
+  TftManager::updateSensors(
+    SensorManager::tempC(),
+    SensorManager::distance(),
+    SensorManager::lightLevel(),
+    SensorManager::flame(),
+    SensorManager::obstacle()
+  );
+  TftManager::loop();
 
   // Re-print the IP on main UART0 every 30s so it's always easy to find
   // on the ESP32's own serial line without needing to reset the board.
