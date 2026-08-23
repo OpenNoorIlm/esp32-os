@@ -18,6 +18,8 @@
 #include "apps/browser.h"
 #include "apps/painter.h"
 #include "apps/taskmanager.h"
+#include "sd_card.h"
+#include "video_player.h"
 
 // Existing robot HTTP API -- unchanged routes/port, now backed by the
 // shared RobotApi:: functions also used by the "robot" shell command.
@@ -55,6 +57,7 @@ void handleHelp() {
 
 void setup() {
   Serial.begin(115200);
+  pinMode(27, OUTPUT); digitalWrite(27, HIGH); // TFT backlight
   RobotApi::begin();
 
   WifiManager::connectOrSetup();   // blocks until connected, or enters AP setup mode
@@ -86,6 +89,7 @@ void setup() {
   SensorManager::begin();
   DriverManager::loadAll();  // load editable.dvr + all installed drivers
   TftManager::begin();
+  SdCard::begin();
   TftManager::setTouchCallback([](String cmd) {
     ShellServer::runCommand("robot " + cmd + " 1");
   });

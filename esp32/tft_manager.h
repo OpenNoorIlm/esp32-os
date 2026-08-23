@@ -15,12 +15,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 #include <TFT_eSPI.h>
-#include <XPT2046_Touchscreen.h>
+// Touch uses manual HSPI (GPIO14=SCK,13=MOSI,12=MISO,22=CS) — no library needed
 #include <WiFi.h>
 
 // ── Pin definitions ───────────────────────────────────────────────────────────
 // TFT SPI (configured in TFT_eSPI User_Setup.h — set these there too)
-#define TFT_CS   15
+#define TFT_CS    5
 #define TFT_DC    2
 #define TFT_RST   4
 #define TFT_MOSI 23
@@ -28,8 +28,9 @@
 #define TFT_CLK  18
 
 // Touch
-#define TOUCH_CS  5
-#define TOUCH_IRQ 27
+#define TOUCH_CS 22
+#define TFT_BL   27  // backlight
+#define TOUCH_IRQ -1  // not used — polling mode
 
 // Sensors (all on ESP32 now)
 #define DHT_PIN      32
@@ -38,7 +39,7 @@
 #define FLAME_PIN    35   // flame sensor
 #define LIGHT_PIN    36   // photoresistor (analog)
 #define SOUND_PIN    39   // sound sensor (analog)
-#define HALL_PIN     25   // hall/magnetic sensor
+#define HALL_PIN     34  // moved from GPIO25 (DAC conflict)   // hall/magnetic sensor
 #define LASER_PIN    26   // laser emit (digital out)
 #define USD_TRIG_PIN 13   // ultrasonic trig (moved from Arduino)
 #define USD_ECHO_PIN 14   // ultrasonic echo (moved from Arduino)
@@ -89,7 +90,18 @@ EyeStyle getEyeStyle(const String& type) {
 
 // ── TFT + Touch objects ───────────────────────────────────────────────────────
 TFT_eSPI        tft;
-XPT2046_Touchscreen touch(TOUCH_CS, TOUCH_IRQ);
+SPIClass _touchSPI(HSPI);
+bool _touchBegun = false;
+
+uint16_t _readTouch(uint8_t cmd) {
+  _touchSPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
+  digitalWrite(TOUCH_CS, LOW);
+  _touchSPI.transfer(cmd);
+  uint16_t val = _touchSPI.transfer16(0x00) >> 4;
+  digitalWrite(TOUCH_CS, HIGH);
+  _touchSPI.endTransaction();
+  return val;
+}
 
 // ── State ─────────────────────────────────────────────────────────────────────
 namespace TftManager {
@@ -437,8 +449,11 @@ void begin() {
   tft.setRotation(0);  // portrait
   tft.fillScreen(CLR_BG);
 
-  touch.begin();
-  touch.setRotation(1);
+  // Touch HSPI init
+  _touchSPI.begin(14, 12, 13, TOUCH_CS); // SCK,MISO,MOSI,CS
+  pinMode(TOUCH_CS, OUTPUT);
+  digitalWrite(TOUCH_CS, HIGH);
+  _touchBegun = true;
 
   // Boot splash
   tft.setTextColor(CLR_NEON_BLUE);
@@ -510,8 +525,17 @@ void loop() {
   }
 
   // Touch handling
-  if (touch.tirqTouched() && touch.touched()) {
-    TS_Point p = touch.getPoint();
+  // Manual XPT2046 read (Z1>100 = touched)
+  uint16_t rawZ1 = _readTouch(0xB0);
+  if (rawZ1 > 100) {
+    uint16_t rawX = _readTouch(0x90);
+    uint16_t rawY = _readTouch(0xD0);
+    struct { int16_t x, y, z; } p;
+    // Calibration from working screen code
+    p.x = map(rawY, 300, 1750, 0, 319);
+    p.y = map(rawX, 1850, 220, 0, 239);
+    p.x = constrain(p.x, 0, 319);
+    p.y = constrain(p.y, 0, 239);
     // Map raw touch coords to screen coords (calibrate if needed)
     int tx = map(p.x, 200, 3800, 0, 240);
     int ty = map(p.y, 200, 3800, 0, 320);

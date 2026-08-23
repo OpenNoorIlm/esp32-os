@@ -27,7 +27,7 @@
 #define SM_FLAME_PIN    35
 #define SM_LIGHT_PIN    36   // analog
 #define SM_SOUND_PIN    39   // analog
-#define SM_HALL_PIN     25
+#define SM_HALL_PIN     34  // moved — GPIO25 is DAC
 #define SM_LASER_PIN    26
 #define SM_USD_TRIG     13
 #define SM_USD_ECHO     14

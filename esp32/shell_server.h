@@ -1,4 +1,5 @@
 #pragma once
+// Video + SD included via esp32.ino before this header
 #include <WiFi.h>
 #include <Preferences.h>
 #include <mbedtls/sha256.h>
@@ -178,6 +179,8 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
   if (cmd == "ps")       return TaskManagerApp::shellCmd("ps");
   if (cmd == "kill")     return TaskManagerApp::shellCmd("kill " + rest);
   if (cmd == "driver")   return DriverManager::shellCmd(rest);
+  if (cmd == "sd")       return SdCard::handleCommand(rest);
+  if (cmd == "video")    return VideoPlayer::handleCommand(rest);
   if (cmd == "os")       return DriverManager::osCmd(rest);
   if (cmd == "nano") {
     String path = FsManager::resolve(rest);
