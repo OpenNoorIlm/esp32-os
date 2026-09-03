@@ -12,6 +12,17 @@
 #include <memory>
 #include <typeinfo>
 
+// ── Primitive typedefs (mirrors Qt's global typedefs) ─────────────────────────
+typedef long long  qint64;
+typedef int        qint32;
+typedef short      qint16;
+typedef signed char qint8;
+typedef unsigned long long  quint64;
+typedef unsigned int        quint32;
+typedef unsigned short      quint16;
+typedef unsigned char       quint8;
+typedef double     qreal;
+
 // ── Chip detection — scales memory usage automatically ────────────────────────
 #ifndef NOORQT_CHIP_TIER
   #if CONFIG_IDF_TARGET_ESP32P4
@@ -54,7 +65,7 @@ class QMetaObject;
 class QVariant {
 public:
   enum Type { Invalid, Bool, Int, UInt, LongLong, ULongLong,
-              Double, Float, Char, String, ByteArray, Void };
+              Double, Float, Char, StringType, ByteArray, Void };
 
   QVariant() : _type(Invalid) {}
   explicit QVariant(bool v)        : _type(Bool),   _i(v) {}
@@ -63,31 +74,31 @@ public:
   explicit QVariant(long long v)   : _type(LongLong),_i(v) {}
   explicit QVariant(double v)      : _type(Double), _d(v) {}
   explicit QVariant(float v)       : _type(Float),  _d(v) {}
-  explicit QVariant(const String& v): _type(String), _s(v) {}
-  explicit QVariant(const char* v) : _type(String), _s(v) {}
+  explicit QVariant(const ::String& v): _type(StringType), _s(v) {}
+  explicit QVariant(const char* v) : _type(StringType), _s(v) {}
 
   Type    type()      const { return _type; }
   bool    isValid()   const { return _type != Invalid; }
   bool    isNull()    const { return _type == Invalid; }
 
   bool        toBool()   const { return _type==Bool||_type==Int ? (bool)_i : _s=="true"; }
-  int         toInt()    const { return _type==String ? _s.toInt() : (int)_i; }
+  int         toInt()    const { return _type==StringType ? _s.toInt() : (int)_i; }
   long long   toLongLong()const{ return _i; }
-  double      toDouble() const { return _type==String ? _s.toDouble() : _d; }
+  double      toDouble() const { return _type==StringType ? _s.toDouble() : _d; }
   float       toFloat()  const { return (float)toDouble(); }
-  String      toString() const {
+  ::String    toString() const {
     switch(_type) {
       case Bool:   return _i?"true":"false";
-      case Int: case UInt: case LongLong: return String((long)_i);
-      case Double: case Float: return String(_d);
-      case String: return _s;
+      case Int: case UInt: case LongLong: return ::String((long)_i);
+      case Double: case Float: return ::String(_d);
+      case StringType: return _s;
       default: return "";
     }
   }
 
   bool operator==(const QVariant& o) const {
     if (_type!=o._type) return false;
-    if (_type==String) return _s==o._s;
+    if (_type==StringType) return _s==o._s;
     if (_type==Double||_type==Float) return _d==o._d;
     return _i==o._i;
   }
@@ -97,7 +108,7 @@ private:
   Type      _type;
   long long _i = 0;
   double    _d = 0;
-  String    _s;
+  ::String  _s;
 };
 
 // ── QMetaProperty ─────────────────────────────────────────────────────────────
@@ -304,18 +315,7 @@ public:
   }
 
   // Call this from loop() or App event loop
-  virtual void timerTick() {
-    unsigned long now=millis();
-    for (auto& t:_timers) {
-      if (t.active && now-t.lastFire >= (unsigned long)t.intervalMs) {
-        t.lastFire=now;
-        QTimerEvent* ev=new QTimerEvent(t.id);
-        timerEvent(ev);
-        delete ev;
-      }
-    }
-    for (auto* c:_children) c->timerTick();
-  }
+  virtual void timerTick();
 
   // ── Event handling (mirrors QObject::event) ───────────────────────────────
   virtual bool event(QEvent* e);
@@ -464,7 +464,7 @@ private:
 inline bool QObject::event(QEvent* e) {
   // Run through event filters first
   for (auto* f:_eventFilters) {
-    if (f->eventFilter(this,e)) return true;
+    if (f->invoke("eventFilter",{QVariant((int)(intptr_t)e)})) return true;
   }
   switch (e->type()) {
     case QEvent::Timer:     timerEvent(static_cast<QTimerEvent*>(e)); return true;
@@ -472,6 +472,19 @@ inline bool QObject::event(QEvent* e) {
     case QEvent::ChildRemoved: childEvent(static_cast<QChildEvent*>(e)); return true;
     default: customEvent(e); return false;
   }
+}
+
+// ── QObject::timerTick — defined here so QTimerEvent is complete ──────────────
+inline void QObject::timerTick() {
+  unsigned long now=millis();
+  for (auto& t:_timers) {
+    if (t.active && now-t.lastFire >= (unsigned long)t.intervalMs) {
+      t.lastFire=now;
+      QTimerEvent ev(t.id);
+      timerEvent(&ev);
+    }
+  }
+  for (auto* c:_children) c->timerTick();
 }
 
 // eventFilter — can be overridden
@@ -650,7 +663,11 @@ namespace Qt {
     Key_P=0x50,Key_Q=0x51,Key_R=0x52,Key_S=0x53,Key_T=0x54,
     Key_U=0x55,Key_V=0x56,Key_W=0x57,Key_X=0x58,Key_Y=0x59,Key_Z=0x5A
   };
-  enum CursorShape { ArrowCursor=0, CrossCursor=2, WaitCursor=3, IBeamCursor=1 };
+  enum AspectRatioMode { IgnoreAspectRatio=0, KeepAspectRatio=1, KeepAspectRatioByExpanding=2 };
+  enum WindowModality  { NonModal=0, WindowModal=1, ApplicationModal=2 };
+  enum FocusReason     { MouseFocusReason=0, TabFocusReason=1, BacktabFocusReason=2,
+                         ActiveWindowFocusReason=3, PopupFocusReason=4, OtherFocusReason=7 };
+  using WindowFlags = int;
   enum WindowFlag  { Widget=0x00000000, Window=0x00000001, Dialog=0x00000002,
                      Popup=0x00000008, ToolTip=0x00000010, Drawer=0x00000020 };
   enum WindowState { WindowNoState=0, WindowMinimized=1, WindowMaximized=2, WindowFullScreen=4 };

@@ -61,9 +61,9 @@ String stopRecord(const String& name) {
   String src = "-- Macro: " + name + "\n";
   src += "return {\n";
   for (auto& e : _recordBuffer) {
-    src += "  {type='" + e.type + "',x1=" + e.x1 + ",y1=" + e.y1;
-    src += ",x2=" + e.x2 + ",y2=" + e.y2;
-    src += ",duration=" + e.duration;
+    src += "  {type='" + e.type + "',x1=" + String(e.x1) + ",y1=" + String(e.y1);
+    src += ",x2=" + String(e.x2) + ",y2=" + String(e.y2);
+    src += ",duration=" + String(e.duration);
     if (!e.text.isEmpty()) src += ",text='" + e.text + "'";
     src += "},\n";
   }

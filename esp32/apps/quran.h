@@ -152,10 +152,10 @@ String shellCmd(const String& args) {
     String body = httpGet(url);
     DynamicJsonDocument doc(65536);
     if (deserializeJson(doc, body)) return "Parse error\n";
-    auto ayahs = doc["data"]["ayahs"];
+    JsonArray ayahs = doc["data"]["ayahs"].as<JsonArray>();
     out += "── Surah " + String(sn) + ": " + SURAH_NAMES[sn] + " ──\n";
     out += "Total ayahs: " + String(ayahs.size()) + "\n\n";
-    for (auto a : ayahs) {
+    for (JsonVariant a : ayahs) {
       out += "[" + a["numberInSurah"].as<String>() + "] ";
       out += a["text"].as<String>() + "\n\n";
     }
@@ -169,9 +169,9 @@ String shellCmd(const String& args) {
     String body = httpGet(url);
     DynamicJsonDocument doc(32768);
     if (deserializeJson(doc, body)) return "Parse error\n";
-    auto matches = doc["data"]["matches"];
+    JsonArray matches = doc["data"]["matches"].as<JsonArray>();
     out += "Search: \"" + rest + "\" — " + String(matches.size()) + " results\n\n";
-    for (auto m : matches) {
+    for (JsonVariant m : matches) {
       int sn = m["surah"]["number"];
       int an = m["numberInSurah"];
       out += String(sn) + ":" + String(an) + " [" + SURAH_NAMES[sn] + "] ";

@@ -14,6 +14,41 @@ class QStyle;
 class QAction;
 class QToolTip;
 
+// ── Event type stubs (ESP32 has no rtti; all are QEvent aliases) ──────────────
+using QResizeEvent        = QEvent;
+using QMoveEvent          = QEvent;
+using QShowEvent          = QEvent;
+using QHideEvent          = QEvent;
+using QCloseEvent         = QEvent;
+using QFocusEvent         = QEvent;
+using QEnterEvent         = QEvent;
+using QContextMenuEvent   = QEvent;
+using QWheelEvent         = QEvent;
+using QKeyEvent           = QEvent;
+using QTouchEvent         = QEvent;
+using QInputMethodEvent   = QEvent;
+using QActionEvent        = QEvent;
+using QDragEnterEvent     = QEvent;
+using QDragMoveEvent      = QEvent;
+using QDragLeaveEvent     = QEvent;
+using QDropEvent          = QEvent;
+using QTabletEvent        = QEvent;
+
+// ── QMouseEvent — simple touch/mouse event ────────────────────────────────────
+class QMouseEvent : public QEvent {
+public:
+  explicit QMouseEvent(QPoint pos, QEvent::Type t=QEvent::MouseButtonPress)
+    : QEvent(t), _pos(pos) {}
+  QPoint pos()        const { return _pos; }
+  QPoint globalPos()  const { return _pos; }
+  int    x()          const { return _pos.x(); }
+  int    y()          const { return _pos.y(); }
+  int    button()     const { return 1; }
+  int    buttons()    const { return 1; }
+private:
+  QPoint _pos;
+};
+
 // ── QSizePolicy ───────────────────────────────────────────────────────────────
 class QSizePolicy {
 public:
@@ -288,7 +323,7 @@ public:
   QWidget* parentWidget() const { return _parent; }
   QList<QWidget*> childWidgets() const {
     QList<QWidget*> r;
-    for(auto* c:children()) if(auto*w=dynamic_cast<QWidget*>(c))r.push_back(w);
+    for(auto* c:children()) r.push_back(static_cast<QWidget*>(c));
     return r;
   }
   bool isAncestorOf(const QWidget* w) const { return QObject::isAncestorOf(w); }

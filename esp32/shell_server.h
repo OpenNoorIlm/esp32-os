@@ -1,5 +1,4 @@
 #pragma once
-// Video + SD included via esp32.ino before this header
 #include <WiFi.h>
 #include <Preferences.h>
 #include <mbedtls/sha256.h>
@@ -23,6 +22,8 @@
 #include "os_manager.h"
 #include "lua_engine.h"
 #include "task_manager.h"
+#include "sd_card.h"
+#include "video_player.h"
 #include <vector>
 
 #define SHELL_PORT 2222
@@ -166,10 +167,10 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
   }
 
   if (cmd == "sysinfo") {
-    String out = capabilitiesReport();
-    out += "\nInstalled OS packages (/pkgs):\n" + PackageManager::listInstalled("/pkgs");
-    out += "\nInstalled apps (/apps):\n" + PackageManager::listInstalled("/apps");
-    return out;
+    String sysOut = capabilitiesReport();
+    sysOut += "\nInstalled OS packages (/pkgs):\n" + PackageManager::listInstalled("/pkgs");
+    sysOut += "\nInstalled apps (/apps):\n" + PackageManager::listInstalled("/apps");
+    return sysOut;
   }
   if (cmd == "robot")   return RobotApi::shellCommand(rest);
   if (cmd == "sensor")   return SensorManager::shellCmd(rest);
@@ -189,8 +190,8 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
   if (cmd == "video")    return VideoPlayer::handleCommand(rest);
   if (cmd == "os")       return DriverManager::osCmd(rest);
   if (cmd == "nano") {
-    String path = FsManager::resolve(rest);
-    String sid  = client.remoteIP().toString();
+    String path = FsManager::toRealPath("/", rest);
+    String sid  = "shell";
     return NanoEditor::nanoOpen(path, sid);
   }
   if (cmd == "tedit")    return NanoEditor::shellCmd(rest);

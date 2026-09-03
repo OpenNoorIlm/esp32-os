@@ -101,7 +101,8 @@ void setup() {
   AudioManager::registerShellCommands();
   HookManager::runBoot();
   TftManager::setTouchCallback([](String cmd) {
-    ShellServer::runCommand("robot " + cmd + " 1");
+    static String _cwd = "/";
+    ShellServer::runCommand("robot " + cmd + " 1", _cwd, Serial);
   });
 
   server.begin();

@@ -151,7 +151,8 @@ public:
       n=n.substring(1);
       if (n.length()==3) {
         char r=n[0],g=n[1],b=n[2];
-        return QColor(strtol(String(r)+r,nullptr,16),strtol(String(g)+g,nullptr,16),strtol(String(b)+b,nullptr,16));
+        char sr[3]={r,r,0}, sg[3]={g,g,0}, sb[3]={b,b,0};
+        return QColor((int)strtol(sr,nullptr,16),(int)strtol(sg,nullptr,16),(int)strtol(sb,nullptr,16));
       }
       if (n.length()==6) {
         long v=strtol(n.c_str(),nullptr,16);
@@ -204,7 +205,7 @@ public:
     float f=100.0f/factor;
     return QColor((int)(_r*f),(int)(_g*f),(int)(_b*f),_a);
   }
-  QColor rgb() const { return QColor(_r,_g,_b,255); }
+  QColor toRgb() const { return QColor(_r,_g,_b,255); }
 
   // Blend two colors
   static QColor blend(const QColor& a,const QColor& b,float t=0.5f) {
@@ -220,16 +221,16 @@ public:
   QString toString() const { return name(); }
 
   // ── Static color constants ────────────────────────────────────────────────
-  static QColor red()       { return QColor(255,0,0); }
-  static QColor green()     { return QColor(0,128,0); }
-  static QColor blue()      { return QColor(0,0,255); }
-  static QColor white()     { return QColor(255,255,255); }
-  static QColor black()     { return QColor(0,0,0); }
-  static QColor yellow()    { return QColor(255,255,0); }
-  static QColor cyan()      { return QColor(0,255,255); }
-  static QColor magenta()   { return QColor(255,0,255); }
-  static QColor transparent(){ return QColor(0,0,0,0); }
-  static QColor gray()      { return QColor(128,128,128); }
+  static QColor fromRed()       { return QColor(255,0,0); }
+  static QColor fromGreen()     { return QColor(0,128,0); }
+  static QColor fromBlue()      { return QColor(0,0,255); }
+  static QColor fromWhite()     { return QColor(255,255,255); }
+  static QColor fromBlack()     { return QColor(0,0,0); }
+  static QColor fromYellow()    { return QColor(255,255,0); }
+  static QColor fromCyan()      { return QColor(0,255,255); }
+  static QColor fromMagenta()   { return QColor(255,0,255); }
+  static QColor fromTransparent(){ return QColor(0,0,0,0); }
+  static QColor fromGray()      { return QColor(128,128,128); }
 
 private:
   int  _r=0,_g=0,_b=0,_a=255;
