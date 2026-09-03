@@ -350,7 +350,7 @@ public:
       int w=0,h=0;
       for(int c=cell.col;c<cell.col+cell.colSpan&&c<_cols;c++) w+=colWidths[c]+(c>cell.col?_hSpacing:0);
       for(int r=cell.row;r<cell.row+cell.rowSpan&&r<_rows;r++) h+=rowHeights[r]+(r>cell.row?_vSpacing:0);
-      cell.item->setGeometry({x,y,w,h});
+      cell.item->setGeometry(QRect{x,y,w,h});
     }
   }
 
@@ -406,14 +406,14 @@ public:
     int y=rect.y()+_margins.top();
     for(auto&r:_rows){
       if(r.spanning){
-        if(r.fieldW) r.fieldW->setGeometry({rect.x()+_margins.left(),y,rect.width()-_margins.left()-_margins.right(),_rowH});
-        if(r.field)  r.field->setGeometry({rect.x()+_margins.left(),y,rect.width()-_margins.left()-_margins.right(),_rowH});
+        if(r.fieldW) r.fieldW->setGeometry(QRect{rect.x()+_margins.left(),y,rect.width()-_margins.left()-_margins.right(),_rowH});
+        if(r.field)  r.field->setGeometry(QRect{rect.x()+_margins.left(),y,rect.width()-_margins.left()-_margins.right(),_rowH});
       } else {
         int lx=rect.x()+_margins.left();
-        if(r.labelW) r.labelW->setGeometry({lx,y,labelW,_rowH});
+        if(r.labelW) r.labelW->setGeometry(QRect{lx,y,labelW,_rowH});
         int fx=lx+labelW+_hSpacing;
-        if(r.fieldW) r.fieldW->setGeometry({fx,y,fieldW,_rowH});
-        if(r.field)  r.field->setGeometry({fx,y,fieldW,_rowH});
+        if(r.fieldW) r.fieldW->setGeometry(QRect{fx,y,fieldW,_rowH});
+        if(r.field)  r.field->setGeometry(QRect{fx,y,fieldW,_rowH});
       }
       y+=_rowH+_vSpacing;
     }

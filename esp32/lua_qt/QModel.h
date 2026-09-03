@@ -336,7 +336,7 @@ public:
 
   void setSourceModel(QAbstractItemModel* m) {
     _src=m;
-    if(m){ m->dataChanged.connect([this](auto a,auto b){ dataChanged.emit(a,b); }); }
+    if(m){ m->dataChanged.connect([this](QModelIndex a,QModelIndex b){ dataChanged.emit(a,b); }); }
     _rebuild();
   }
   QAbstractItemModel* sourceModel() const { return _src; }

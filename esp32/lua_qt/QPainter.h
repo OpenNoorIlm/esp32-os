@@ -269,7 +269,7 @@ public:
 
   // ── Clipping ──────────────────────────────────────────────────────────────
   void setClipRect(QRect r){ _clipRect=r; _hasClip=true; }
-  void setClipRect(int x,int y,int w,int h){ setClipRect({x,y,w,h}); }
+  void setClipRect(int x,int y,int w,int h){ setClipRect(QRect{x,y,w,h}); }
   void setClipping(bool b)  { _hasClip=b; }
   bool hasClipping()  const { return _hasClip; }
   QRect clipRect()    const { return _clipRect; }

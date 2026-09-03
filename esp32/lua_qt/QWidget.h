@@ -328,7 +328,7 @@ public:
   bool contains(int x,int y) const { return x>=_x&&x<_x+_w&&y>=_y&&y<_y+_h; }
   bool contains(QPoint p)    const { return contains(p.x(),p.y()); }
   QWidget* childAt(int x,int y) const {
-    for(auto*c:childWidgets()) if(c->isVisible()&&c->contains(c->mapFromParent({x,y})))return c;
+    for(auto*c:childWidgets()) if(c->isVisible()&&c->contains(c->mapFromParent(QPoint{x,y})))return c;
     return nullptr;
   }
 

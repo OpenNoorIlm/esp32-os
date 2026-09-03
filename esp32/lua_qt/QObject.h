@@ -181,29 +181,13 @@ public:
   }
 
   // ── findChild / findChildren (mirrors Qt6) ─────────────────────────────────
+  // ESP32 uses -fno-rtti so dynamic_cast is unavailable.
+  // These are stub implementations — not called by any Lua/shell code.
   template<typename T>
-  T* findChild(const String& name="") const {
-    for (auto* c : _children) {
-      if (auto* t=dynamic_cast<T*>(c)) {
-        if (name.isEmpty()||t->objectName()==name) return t;
-      }
-      if (auto* t=c->findChild<T>(name)) return t;
-    }
-    return nullptr;
-  }
+  T* findChild(const String& name="") const { return nullptr; }
 
   template<typename T>
-  std::vector<T*> findChildren(const String& name="") const {
-    std::vector<T*> result;
-    for (auto* c : _children) {
-      if (auto* t=dynamic_cast<T*>(c)) {
-        if (name.isEmpty()||t->objectName()==name) result.push_back(t);
-      }
-      auto sub=c->findChildren<T>(name);
-      result.insert(result.end(),sub.begin(),sub.end());
-    }
-    return result;
-  }
+  std::vector<T*> findChildren(const String& name="") const { return {}; }
 
   // ── Properties (Q_PROPERTY equivalent) ────────────────────────────────────
   void registerProperty(const QMetaProperty& prop) {
@@ -696,6 +680,14 @@ namespace Qt {
   enum WhatsThis   {};
   const int  Ignored = 0;
   const bool Checked2 = true;
+  // Corners
+  enum Corner { TopLeftCorner=0, TopRightCorner=1, BottomLeftCorner=2, BottomRightCorner=3 };
+  // Item data roles
+  enum ItemDataRole {
+    DisplayRole=0, DecorationRole=1, EditRole=2, ToolTipRole=3,
+    StatusTipRole=4, WhatsThisRole=5, FontRole=6, TextAlignmentRole=7,
+    CheckStateRole=10, SizeHintRole=13, UserRole=0x0100
+  };
 }
 
 // ── QFlags (mirrors Qt6 QFlags<T>) ───────────────────────────────────────────

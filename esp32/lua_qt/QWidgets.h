@@ -94,7 +94,7 @@ public:
     // Text
     p->setPen(QPen(!isEnabled()?QColor(100,100,100):fg));
     p->setFont(_font);
-    p->drawText({_x,_y,_w,_h},Qt::AlignCenter,_text);
+    p->drawText(QRect{_x,_y,_w,_h},Qt::AlignCenter,_text);
   }
 
 private:
@@ -153,7 +153,7 @@ public:
       }
       if(!line.isEmpty()) p->drawText(_x+_margin,y,_w-_margin*2,12*_font.tftSize(),flags,line);
     } else {
-      p->drawText({_x+_margin,_y+_margin,_w-_margin*2,_h-_margin*2},flags,_text);
+      p->drawText(QRect{_x+_margin,_y+_margin,_w-_margin*2,_h-_margin*2},flags,_text);
     }
   }
 
@@ -238,7 +238,7 @@ public:
     p->setBrush(QBrush(bg));
     p->setPen(QPen(bc,_focused?2:1));
     if(_frame) p->drawRoundedRect(_x,_y,_w,_h,r,r);
-    else p->fillRect({_x,_y,_w,_h},bg);
+    else p->fillRect(QRect{_x,_y,_w,_h},bg);
     QString display=displayText().isEmpty()?_placeholder:displayText();
     p->setPen(QPen(fg));
     p->setFont(_font);
@@ -318,9 +318,9 @@ public:
   void paintEvent(QPainter* p) override {
     if(!isVisible()) return;
     QColor bg=_ss.hasBg?_ss.bg:QColor(35,35,35);
-    p->fillRect({_x,_y,_w,_h},bg);
+    p->fillRect(QRect{_x,_y,_w,_h},bg);
     p->setPen(QPen(_ss.hasBorder?_ss.border:QColor(70,70,70)));
-    p->drawRect({_x,_y,_w,_h});
+    p->drawRect(QRect{_x,_y,_w,_h});
     QString display=_text.isEmpty()?_placeholder:_text;
     p->setPen(QPen(_text.isEmpty()?QColor(100,100,100):(_ss.hasFg?_ss.fg:QColor(220,220,220))));
     p->setFont(_font);
@@ -646,7 +646,7 @@ public:
   void stepDown()           { setValue(_value-_step); }
   void paintEvent(QPainter* p) override {
     if(!isVisible())return;
-    p->fillRect({_x,_y,_w,_h},_ss.hasBg?_ss.bg:QColor(45,45,45));
+    p->fillRect(QRect{_x,_y,_w,_h},_ss.hasBg?_ss.bg:QColor(45,45,45));
     p->setPen(QPen(_ss.hasFg?_ss.fg:QColor(220,220,220))); p->setFont(_font);
     p->drawText(_x,_y,_w,_h,Qt::AlignCenter,text());
   }
@@ -904,7 +904,13 @@ public:
   void setViewMode(ViewMode m)          { _viewMode=m;update(); }
   void setFlow(Flow f)                  { _flow=f;update(); }
   void setSortingEnabled(bool s)        { _sortEnabled=s; }
-  void sortItems(Qt::SortOrder o=Qt::AscendingOrder){ if(o==Qt::AscendingOrder)std::sort(_items.begin(),_items.end(),[](auto*a,auto*b){return *a<*b;});else std::sort(_items.begin(),_items.end(),[](auto*a,auto*b){return *b<*a;});update(); }
+  void sortItems(Qt::SortOrder o=Qt::AscendingOrder){
+    if(o==Qt::AscendingOrder)
+      std::sort(_items.begin(),_items.end(),[](QListWidgetItem*a,QListWidgetItem*b){return *a<*b;});
+    else
+      std::sort(_items.begin(),_items.end(),[](QListWidgetItem*a,QListWidgetItem*b){return *b<*a;});
+    update();
+  }
   void setIconSize(QSize s)             { _iconSize=s; }
   void setGridSize(QSize s)             { _gridSize=s; }
   void setSpacing(int s)                { _spacing=s;update(); }
@@ -918,7 +924,6 @@ public:
   bool isPersistentEditorOpen(QListWidgetItem*)const{return false;}
   void setItemWidget(QListWidgetItem*,QWidget*){}
   QWidget* itemWidget(QListWidgetItem*)const{return nullptr;}
-  void removeItemWidget(QListWidgetItem*){}
   bool isSortingEnabled()        const  { return _sortEnabled; }
   QListWidgetItem* itemAt(QPoint p)const{ int r=_scrollTop+(p.y()-_y)/_rowH;return item(r); }
   QListWidgetItem* itemAt(int x,int y)const{ return itemAt({x,y}); }
@@ -931,7 +936,7 @@ public:
     QColor fg=_ss.hasFg?_ss.fg:QColor(220,220,220);
     QColor selBg=QColor(0,90,160),altBg=QColor(40,40,40);
     p->setBrush(QBrush(bg)); p->setPen(QPen(_ss.hasBorder?_ss.border:QColor(60,60,60)));
-    p->drawRect({_x,_y,_w,_h});
+    p->drawRect(QRect{_x,_y,_w,_h});
     int vr=visibleRows();
     for(int i=0;i<vr&&(_scrollTop+i)<(int)_items.size();i++){
       auto* item2=_items[_scrollTop+i];
@@ -940,7 +945,7 @@ public:
       bool sel=item2->isSelected()||((_scrollTop+i)==_current);
       QColor rowBg=sel?selBg:(i%2==0?bg:altBg);
       p->setBrush(QBrush(rowBg)); p->setPen(QPen::NoPen);
-      p->drawRect({_x+1,iy,_w-2,_rowH});
+      p->drawRect(QRect{_x+1,iy,_w-2,_rowH});
       p->setPen(QPen(sel?QColor(255,255,255):fg));
       p->setFont(_font);
       QString txt=item2->text();
@@ -1128,9 +1133,9 @@ public:
 
   void paintEvent(QPainter* p) override {
     if(!isVisible())return;
-    p->fillRect({_x,_y,_w,_h},_palette.color(QPalette::Base));
+    p->fillRect(QRect{_x,_y,_w,_h},_palette.color(QPalette::Base));
     p->setPen(QPen(QColor(60,60,60)));
-    p->drawRect({_x,_y,_w,_h});
+    p->drawRect(QRect{_x,_y,_w,_h});
     if(!_content)return;
     // Clip and render content with scroll offset
     int cw=_resizable?_w:_content->width();
@@ -1345,9 +1350,9 @@ public:
 
   void paintEvent(QPainter* p) override {
     if(!isVisible())return;
-    p->fillRect({_x,_y,_w,_h},QColor(0,30,0));
+    p->fillRect(QRect{_x,_y,_w,_h},QColor(0,30,0));
     p->setPen(QPen(QColor(70,70,70)));
-    p->drawRect({_x,_y,_w,_h});
+    p->drawRect(QRect{_x,_y,_w,_h});
     p->setPen(QPen(QColor(0,220,0))); p->setFont(QFont("default",16,QFont::Bold));
     QString display=_strVal;
     switch(_mode){
@@ -1392,13 +1397,13 @@ public:
 
   void paintEvent(QPainter* p) override {
     if(!isVisible())return;
-    if(_autoFill)p->fillRect({_x,_y,_w,_h},_palette.color(QPalette::Window));
+    if(_autoFill)p->fillRect(QRect{_x,_y,_w,_h},_palette.color(QPalette::Window));
     QColor light=QColor(100,100,100),dark=QColor(20,20,20),mid=QColor(60,60,60);
     switch(_shape){
       case HLine: p->setPen(QPen(_shadow2==Sunken?dark:light,_lineW)); p->drawLine(_x,_y+_h/2,_x+_w,_y+_h/2); break;
       case VLine: p->setPen(QPen(_shadow2==Sunken?dark:light,_lineW)); p->drawLine(_x+_w/2,_y,_x+_w/2,_y+_h); break;
       case Box: case Panel: case StyledPanel:
-        p->setPen(QPen(_shadow2==Sunken?dark:light,_lineW)); p->drawRect({_x,_y,_w,_h});
+        p->setPen(QPen(_shadow2==Sunken?dark:light,_lineW)); p->drawRect(QRect{_x,_y,_w,_h});
         if(_shadow2!=Plain){ p->setPen(QPen(_shadow2==Sunken?light:dark,_lineW)); p->drawLine(_x+_w,_y,_x+_w,_y+_h); p->drawLine(_x,_y+_h,_x+_w,_y+_h); }
         break;
       default: break;
@@ -1443,14 +1448,14 @@ public:
       int x=_x;
       for(int i=0;i<(int)_panels.size()-1;i++){
         x+=_sizes[i];
-        p->drawRect({x,_y,_handleW,_h});
+        p->drawRect(QRect{x,_y,_handleW,_h});
         x+=_handleW;
       }
     } else {
       int y=_y;
       for(int i=0;i<(int)_panels.size()-1;i++){
         y+=_sizes[i];
-        p->drawRect({_x,y,_w,_handleW});
+        p->drawRect(QRect{_x,y,_w,_handleW});
         y+=_handleW;
       }
     }
@@ -1512,7 +1517,7 @@ public:
 
   void paintEvent(QPainter* p) override {
     if(!isVisible())return;
-    p->fillRect({_x,_y,_w,_h},_palette.color(QPalette::Window));
+    p->fillRect(QRect{_x,_y,_w,_h},_palette.color(QPalette::Window));
     if(_current>=0&&_current<(int)_pages.size()&&_pages[_current]->isVisible()){
       _pages[_current]->setGeometry(_x,_y,_w,_h);
       QPainter cp(_pages[_current]); _pages[_current]->paintEvent(&cp);
