@@ -14,39 +14,35 @@ class QStyle;
 class QAction;
 class QToolTip;
 
-// ── Event type stubs (ESP32 has no rtti; all are QEvent aliases) ──────────────
-using QResizeEvent        = QEvent;
-using QMoveEvent          = QEvent;
-using QShowEvent          = QEvent;
-using QHideEvent          = QEvent;
-using QCloseEvent         = QEvent;
-using QFocusEvent         = QEvent;
-using QEnterEvent         = QEvent;
-using QContextMenuEvent   = QEvent;
-using QWheelEvent         = QEvent;
-using QKeyEvent           = QEvent;
-using QTouchEvent         = QEvent;
-using QInputMethodEvent   = QEvent;
-using QActionEvent        = QEvent;
-using QDragEnterEvent     = QEvent;
-using QDragMoveEvent      = QEvent;
-using QDragLeaveEvent     = QEvent;
-using QDropEvent          = QEvent;
-using QTabletEvent        = QEvent;
+// ── Event forward declarations ────────────────────────────────────────────────
+struct QResizeEvent;
+struct QMoveEvent;
+struct QShowEvent;
+struct QHideEvent;
+struct QCloseEvent;
+struct QFocusEvent;
+struct QEnterEvent;
+struct QContextMenuEvent;
+struct QWheelEvent;
+struct QKeyEvent;
+struct QTouchEvent;
+struct QInputMethodEvent;
+struct QActionEvent;
+struct QDragEnterEvent;
+struct QDragMoveEvent;
+struct QDragLeaveEvent;
+struct QDropEvent;
+struct QTabletEvent;
 
-// ── QMouseEvent — simple touch/mouse event ────────────────────────────────────
-class QMouseEvent : public QEvent {
-public:
-  explicit QMouseEvent(QPoint pos, QEvent::Type t=QEvent::MouseButtonPress)
-    : QEvent(t), _pos(pos) {}
-  QPoint pos()        const { return _pos; }
-  QPoint globalPos()  const { return _pos; }
-  int    x()          const { return _pos.x(); }
-  int    y()          const { return _pos.y(); }
-  int    button()     const { return 1; }
-  int    buttons()    const { return 1; }
-private:
-  QPoint _pos;
+// ── QMouseEvent — defined early so QWidget::handleTouch can use it ────────────
+struct QMouseEvent {
+  QPoint pos, globalPos;
+  Qt::MouseButton button = Qt::LeftButton;
+  Qt::MouseButtons buttons = Qt::LeftButton;
+  QMouseEvent() {}
+  QMouseEvent(QPoint p) : pos(p), globalPos(p) {}
+  int x() const { return pos.x(); }
+  int y() const { return pos.y(); }
 };
 
 // ── QSizePolicy ───────────────────────────────────────────────────────────────
@@ -478,14 +474,8 @@ struct QFocusEvent   { Qt::FocusReason reason=Qt::OtherFocusReason; };
 struct QEnterEvent   { QPoint pos; };
 struct QContextMenuEvent { QPoint pos; };
 struct QWheelEvent   { QPoint pos; int delta=0; };
-struct QKeyEvent     { Qt::Key key; QString text; bool autoRepeat=false; };
-struct QMouseEvent   {
-  QPoint pos,globalPos;
-  Qt::MouseButton button=Qt::LeftButton;
-  Qt::MouseButtons buttons;
-  QMouseEvent(){}
-  QMouseEvent(QPoint p):pos(p),globalPos(p){}
-};
+struct QKeyEvent     { Qt::Key key=Qt::Key_Return; QString text; bool autoRepeat=false; };
+// QMouseEvent defined above (before QWidget)
 struct QTouchEvent   { struct TouchPoint { QPointF pos; int id; }; QList<TouchPoint> points; };
 struct QInputMethodEvent {};
 struct QActionEvent  {};

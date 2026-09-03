@@ -667,7 +667,14 @@ namespace Qt {
   enum WindowModality  { NonModal=0, WindowModal=1, ApplicationModal=2 };
   enum FocusReason     { MouseFocusReason=0, TabFocusReason=1, BacktabFocusReason=2,
                          ActiveWindowFocusReason=3, PopupFocusReason=4, OtherFocusReason=7 };
-  using WindowFlags = int;
+  enum CursorShape     { ArrowCursor=0, CrossCursor=2, WaitCursor=3, IBeamCursor=1,
+                         BlankCursor=10, SizeVerCursor=11, SizeHorCursor=12 };
+  enum MouseButton     { NoButton=0, LeftButton=0x1, RightButton=0x2, MiddleButton=0x4 };
+  using MouseButtons   = int;
+  using Orientations   = int;
+  using Alignment      = int;
+  using WindowFlags    = int;
+  using ItemFlags      = int;
   enum WindowFlag  { Widget=0x00000000, Window=0x00000001, Dialog=0x00000002,
                      Popup=0x00000008, ToolTip=0x00000010, Drawer=0x00000020 };
   enum WindowState { WindowNoState=0, WindowMinimized=1, WindowMaximized=2, WindowFullScreen=4 };
