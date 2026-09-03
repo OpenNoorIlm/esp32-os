@@ -1223,7 +1223,7 @@ public:
 // DIALOGS
 // ════════════════════════════════════════════════════════════════════════════
 
-void _drawDialogBase(const String& title, int dw=200, int dh=160) {
+inline void _drawDialogBase(const String& title, int dw=200, int dh=160) {
   int dx=(240-dw)/2, dy=(320-dh)/2;
   // Backdrop dimming
   for (int i=0;i<4;i++) tft.drawRect(i,i,240-i*2,320-i*2,dimColor(T().shadow,0.5f));
@@ -1235,7 +1235,7 @@ void _drawDialogBase(const String& title, int dw=200, int dh=160) {
   tft.setCursor(dx+(dw-title.length()*6)/2,dy+8); tft.print(title);
 }
 
-void _dialogText(const String& msg, int dx, int dy, int dw) {
+inline void _dialogText(const String& msg, int dx, int dy, int dw) {
   tft.setTextColor(T().fg,T().bg); tft.setTextSize(1);
   int lx=dx+8, ly=dy+32;
   String word="", line="";
@@ -1249,7 +1249,7 @@ void _dialogText(const String& msg, int dx, int dy, int dw) {
   if (!line.isEmpty()) { tft.setCursor(lx,ly); tft.print(line); }
 }
 
-void uiAlert(const String& msg, const String& title="Notice") {
+inline void uiAlert(const String& msg, const String& title="Notice") {
   int dw=200,dh=140,dx=(240-dw)/2,dy=(320-dh)/2;
   _drawDialogBase(title,dw,dh);
   _dialogText(msg,dx,dy,dw);
@@ -1268,7 +1268,7 @@ void uiAlert(const String& msg, const String& title="Notice") {
   }
 }
 
-bool uiConfirm(const String& msg, const String& title="Confirm?") {
+inline bool uiConfirm(const String& msg, const String& title="Confirm?") {
   int dw=200,dh=150,dx=(240-dw)/2,dy=(320-dh)/2;
   _drawDialogBase(title,dw,dh);
   _dialogText(msg,dx,dy,dw);
@@ -1291,7 +1291,7 @@ bool uiConfirm(const String& msg, const String& title="Confirm?") {
   return false;
 }
 
-String uiPrompt(const String& label, const String& defaultVal="") {
+inline String uiPrompt(const String& label, const String& defaultVal="") {
   int dw=220,dh=120,dx=(240-dw)/2,dy=(320-dh)/2;
   _drawDialogBase(label,dw,dh);
   tft.setTextColor(T().fg,T().bg); tft.setTextSize(1);
@@ -1299,7 +1299,7 @@ String uiPrompt(const String& label, const String& defaultVal="") {
   return VKeyboard::open(label,defaultVal);
 }
 
-String uiPick(std::vector<String> items, const String& label="Choose:") {
+inline String uiPick(std::vector<String> items, const String& label="Choose:") {
   int dw=220,dh=min(300,(int)(items.size()*24+60));
   int dx=(240-dw)/2,dy=(320-dh)/2;
   _drawDialogBase(label,dw,dh);
@@ -1323,7 +1323,7 @@ String uiPick(std::vector<String> items, const String& label="Choose:") {
   return "";
 }
 
-String uiFilePick(const String& startPath="/") {
+inline String uiFilePick(const String& startPath="/") {
   // Simple file browser dialog
   std::vector<String> files;
   File root=SPIFFS.open(startPath);
@@ -1335,7 +1335,7 @@ String uiFilePick(const String& startPath="/") {
   return uiPick(files,"Select file:");
 }
 
-void uiProgress(const String& label, std::function<void(std::function<void(int)>)> fn) {
+inline void uiProgress(const String& label, std::function<void(std::function<void(int)>)> fn) {
   int dw=200,dh=80,dx=(240-dw)/2,dy=(320-dh)/2;
   _drawDialogBase(label,dw,dh);
   tft.fillRoundRect(dx+8,dy+46,dw-16,20,4,T().input);

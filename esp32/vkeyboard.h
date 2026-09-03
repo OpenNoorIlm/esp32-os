@@ -47,7 +47,7 @@ bool   _shift       = false;
 bool   _submitted   = false;
 
 // ── Draw input bar ────────────────────────────────────────────────────────────
-void drawInputBar() {
+inline void drawInputBar() {
   tft.fillRect(0, KB_INPUT_Y, 240, KB_INPUT_H, KB_CLR_INPUT);
   tft.drawRect(0, KB_INPUT_Y, 240, KB_INPUT_H, KB_CLR_BORDER);
   tft.setTextColor(0x07FF, KB_CLR_INPUT);
@@ -66,7 +66,7 @@ void drawInputBar() {
 }
 
 // ── Draw single key ───────────────────────────────────────────────────────────
-void drawKey(int x, int y, const char* label, uint16_t bg, uint16_t fg) {
+inline void drawKey(int x, int y, const char* label, uint16_t bg, uint16_t fg) {
   tft.fillRoundRect(x, y, KB_KEY_W, KB_KEY_H, 3, bg);
   tft.drawRoundRect(x, y, KB_KEY_W, KB_KEY_H, 3, 0x4208);
   tft.setTextColor(fg, bg);
@@ -78,7 +78,7 @@ void drawKey(int x, int y, const char* label, uint16_t bg, uint16_t fg) {
 }
 
 // ── Draw full keyboard ────────────────────────────────────────────────────────
-void drawKeyboard() {
+inline void drawKeyboard() {
   tft.fillRect(0, KB_Y - 4, 240, 320 - KB_Y + 4, KB_CLR_BG);
   tft.drawFastHLine(0, KB_Y - 4, 240, KB_CLR_BORDER);
 
@@ -128,7 +128,7 @@ void drawKeyboard() {
 }
 
 // ── Hit test ──────────────────────────────────────────────────────────────────
-void handleTouch(int tx, int ty) {
+inline void handleTouch(int tx, int ty) {
   // Check special keys row first
   int specialY = KB_Y + ROW_COUNT * (KB_KEY_H + KB_GAP);
 
@@ -186,7 +186,7 @@ void handleTouch(int tx, int ty) {
 
 // Open keyboard with optional prefilled text, blocks until Enter pressed
 // Returns the typed string
-String open(const String& prompt = "", const String& prefill = "") {
+inline String open(const String& prompt = "", const String& prefill = "") {
   _inputBuffer = prefill;
   _active      = true;
   _submitted   = false;
@@ -216,6 +216,6 @@ String open(const String& prompt = "", const String& prefill = "") {
 }
 
 // Returns current buffer without blocking
-String getBuffer() { return _inputBuffer; }
+inline String getBuffer() { return _inputBuffer; }
 
 } // namespace VKeyboard

@@ -68,7 +68,7 @@ struct EyeStyle {
   uint16_t glow;
 };
 
-EyeStyle getEyeStyle(const String& type) {
+inline EyeStyle getEyeStyle(const String& type) {
   if (type == "Happy")     return {CLR_NEON_GRN,  0x0200, CLR_WHITE,  CLR_NEON_GRN};
   if (type == "Sad")       return {CLR_NEON_BLUE,  0x0010, CLR_WHITE,  CLR_NEON_BLUE};
   if (type == "Angry")     return {CLR_RED,         0x4000, CLR_WHITE,  CLR_RED};
@@ -101,7 +101,7 @@ extern SPIClass _touchSPI;
 extern bool _touchBegun;
 #endif
 
-uint16_t _readTouch(uint8_t cmd) {
+inline uint16_t _readTouch(uint8_t cmd) {
   _touchSPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
   digitalWrite(TOUCH_CS, LOW);
   _touchSPI.transfer(cmd);
@@ -114,6 +114,7 @@ uint16_t _readTouch(uint8_t cmd) {
 // ── State ─────────────────────────────────────────────────────────────────────
 namespace TftManager {
 
+#ifdef TFT_MANAGER_IMPLEMENTATION
 String  _currentEye   = "Normal";
 int     _eyeOffX      = 0;
 int     _eyeOffY      = 0;
@@ -130,14 +131,25 @@ int     _pupilDy      = 0;
 
 // Touch button callback — set this from esp32.ino
 std::function<void(String)> _onTouchCommand = nullptr;
+#else
+extern String _currentEye;
+extern int _eyeOffX, _eyeOffY;
+extern float _temperature, _distance;
+extern int _lightLevel;
+extern bool _flameDetected, _obstacleDetected;
+extern unsigned long _lastBlink, _lastEyeAnim;
+extern bool _eyeOpen;
+extern int _pupilDx, _pupilDy;
+extern std::function<void(String)> _onTouchCommand;
+#endif
 
-void setTouchCallback(std::function<void(String)> cb) {
+inline void setTouchCallback(std::function<void(String)> cb) {
   _onTouchCommand = cb;
 }
 
 // ── Drawing helpers ───────────────────────────────────────────────────────────
 
-void drawGlow(int x, int y, int r, uint16_t color) {
+inline void drawGlow(int x, int y, int r, uint16_t color) {
   // Multi-ring glow effect
   for (int i = 3; i >= 1; i--) {
     uint16_t dimmed = (((color >> 11) & 0x1F) >> i) << 11 |
@@ -149,7 +161,7 @@ void drawGlow(int x, int y, int r, uint16_t color) {
 }
 
 // ── Status bar (top 40px) ─────────────────────────────────────────────────────
-void drawStatusBar() {
+inline void drawStatusBar() {
   tft.fillRect(0, 0, 240, 40, CLR_STATUS);
   tft.drawFastHLine(0, 40, 240, CLR_NEON_BLUE);
 
@@ -194,7 +206,7 @@ void drawStatusBar() {
 }
 
 // ── Eyes panel (y: 45-185) ────────────────────────────────────────────────────
-void drawEyesPanel(const String& type, int ox, int oy) {
+inline void drawEyesPanel(const String& type, int ox, int oy) {
   tft.fillRect(0, 45, 240, 140, CLR_BG);
 
   EyeStyle s = getEyeStyle(type);
@@ -364,7 +376,7 @@ void drawEyesPanel(const String& type, int ox, int oy) {
 }
 
 // ── Sensor bar (y: 190-235) ───────────────────────────────────────────────────
-void drawSensorBar() {
+inline void drawSensorBar() {
   tft.fillRect(0, 190, 240, 46, 0x0821);
   tft.drawFastHLine(0, 190, 240, CLR_NEON_BLUE);
   tft.drawFastHLine(0, 235, 240, CLR_NEON_BLUE);
@@ -425,7 +437,7 @@ const TouchBtn BUTTONS[] = {
 };
 const int BTN_COUNT = 5;
 
-void drawButtons() {
+inline void drawButtons() {
   tft.fillRect(0, 240, 240, 80, 0x1082);
   tft.drawFastHLine(0, 240, 240, CLR_NEON_BLUE);
   for (int i = 0; i < BTN_COUNT; i++) {
@@ -443,7 +455,7 @@ void drawButtons() {
 }
 
 // ── Full screen redraw ────────────────────────────────────────────────────────
-void redrawAll() {
+inline void redrawAll() {
   tft.fillScreen(CLR_BG);
   drawStatusBar();
   drawEyesPanel(_currentEye, _eyeOffX, _eyeOffY);
@@ -452,7 +464,7 @@ void redrawAll() {
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
-void begin() {
+inline void begin() {
   tft.init();
   tft.setRotation(0);  // portrait
   tft.fillScreen(CLR_BG);
@@ -461,7 +473,7 @@ void begin() {
   _touchSPI.begin(14, 12, 13, TOUCH_CS); // SCK,MISO,MOSI,CS
   pinMode(TOUCH_CS, OUTPUT);
   digitalWrite(TOUCH_CS, HIGH);
-  touch.begin();
+  touch.begin(_touchSPI);
   touch.setRotation(0);
   _touchBegun = true;
 
@@ -483,18 +495,18 @@ void begin() {
   redrawAll();
 }
 
-void setEyes(const String& type, int ox, int oy) {
+inline void setEyes(const String& type, int ox, int oy) {
   _currentEye = type;
   _eyeOffX = ox;
   _eyeOffY = oy;
   drawEyesPanel(type, ox, oy);
 }
 
-void clearEyes() {
+inline void clearEyes() {
   tft.fillRect(0, 45, 240, 140, CLR_BG);
 }
 
-void updateSensors(float temp, float dist, int light, bool flame, bool obstacle) {
+inline void updateSensors(float temp, float dist, int light, bool flame, bool obstacle) {
   _temperature      = temp;
   _distance         = dist;
   _lightLevel       = light;
@@ -505,7 +517,7 @@ void updateSensors(float temp, float dist, int light, bool flame, bool obstacle)
 }
 
 // Call this every loop()
-void loop() {
+inline void loop() {
   unsigned long now = millis();
 
   // Blink every 4 seconds
