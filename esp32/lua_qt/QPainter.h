@@ -7,6 +7,7 @@
 #include "QGeometry.h"
 #include <TFT_eSPI.h>
 
+#include <TFT_eSPI.h>
 extern TFT_eSPI tft;
 
 namespace NoorQt {

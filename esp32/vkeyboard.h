@@ -7,6 +7,7 @@
 
 #include <TFT_eSPI.h>
 #include <XPT2046_Touchscreen.h>
+#include "apps/hwtest.h"   // HwTest::applyMap() — runtime touch calibration
 
 extern TFT_eSPI tft;
 extern XPT2046_Touchscreen touch;
@@ -203,8 +204,8 @@ String open(const String& prompt = "", const String& prefill = "") {
   while (_active) {
     if (touch.tirqTouched() && touch.touched()) {
       TS_Point p = touch.getPoint();
-      int tx = map(p.x, 200, 3800, 0, 240);
-      int ty = map(p.y, 200, 3800, 0, 320);
+      int tx, ty;
+      HwTest::applyMap(p.x, p.y, tx, ty);  // uses saved calibration
       handleTouch(tx, ty);
       delay(120); // debounce
     }

@@ -18,6 +18,7 @@
 #include "fs_manager.h"
 #include "vkeyboard.h"
 
+#include <TFT_eSPI.h>
 extern TFT_eSPI tft;
 extern XPT2046_Touchscreen touch;
 

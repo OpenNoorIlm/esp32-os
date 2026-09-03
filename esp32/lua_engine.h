@@ -1,6 +1,19 @@
 #pragma once
 #include <Arduino.h>
 
+// ── Lua build options ─────────────────────────────────────────────────────────
+// Must be defined BEFORE any lua_src header is included, anywhere in the
+// sketch. Putting them here (in lua_engine.h, which every Lua-touching header
+// includes transitively) ensures they are always set first, regardless of
+// include order. lua_engine.cpp also defines them locally before onelua.c,
+// which is fine — identical macro redefinitions are not an error.
+#ifndef LUA_32BITS
+#  define LUA_32BITS   // use 32-bit ints/floats — meaningfully less RAM on ESP32
+#endif
+#ifndef MAKE_LIB
+#  define MAKE_LIB     // onelua.c: build as library (no main()), included only by lua_engine.cpp
+#endif
+
 // Thin C++ facade over the embedded Lua interpreter (lua_src/lua-master,
 // built via lua_engine.cpp as a single-translation-unit "onelua.c" library).
 // Keeps every raw lua_State*/lua_* C-API detail out of shell_server.h.

@@ -97,6 +97,83 @@ the shell's `storage --change` command. Standard ESP32 VSPI bus.
 
 ---
 
+---
+
+## 5. 2.8" ILI9341 TFT SPI display
+
+Library: **TFT_eSPI** (Bodmer). Configure `User_Setup.h` with:
+`#define ILI9341_DRIVER`, `TFT_MISO 19`, `TFT_MOSI 23`, `TFT_SCLK 18`, `TFT_CS 5`, `TFT_DC 2`, `TFT_RST 4`
+
+| ESP32 pin | TFT module pin | Notes                          |
+|-----------|----------------|--------------------------------|
+| GPIO5     | CS             | Chip select                    |
+| GPIO2     | DC / RS        | Data / command                 |
+| GPIO4     | RST            | Reset                          |
+| GPIO23    | MOSI / SDA     | VSPI MOSI                      |
+| GPIO19    | MISO           | VSPI MISO                      |
+| GPIO18    | SCK / CLK      | VSPI clock                     |
+| GPIO27    | BL / LED       | Backlight (pulled HIGH in code)|
+| 3.3V      | VCC            | **3.3V only**                  |
+| GND       | GND            |                                |
+
+---
+
+## 6. XPT2046 touch controller (on same PCB as ILI9341)
+
+Uses a **separate HSPI bus** (to avoid CS conflicts with the display).
+
+| ESP32 pin | XPT2046 pin | Notes                                   |
+|-----------|-------------|-----------------------------------------|
+| GPIO22    | T_CS        | Touch chip select (separate from TFT_CS)|
+| GPIO13    | T_DIN / MOSI| HSPI MOSI                               |
+| GPIO12    | T_DO / MISO | HSPI MISO                               |
+| GPIO14    | T_CLK / SCK | HSPI clock                              |
+| -         | T_IRQ       | Not used — polling mode                 |
+| 3.3V      | VCC         |                                         |
+| GND       | GND         |                                         |
+
+⚠️ **Run `hwtest` from NoorShell after first flash to calibrate touch.**
+Calibration is saved to `/sys/touch_cal.txt` and loaded automatically on boot.
+
+---
+
+## 7. PAM8403 amplifier + speakers (audio)
+
+ESP32 DAC (GPIO25) → PAM8403 IN → 2× 3W 8Ω speakers
+
+| ESP32 pin | PAM8403 pin | Notes                                  |
+|-----------|-------------|----------------------------------------|
+| GPIO25    | L IN / R IN | DAC1 output (mono — tie both channels) |
+| GND       | GND         | Common ground                          |
+| 5V        | VCC         | PAM8403 needs 5V for full power        |
+| -         | OUT L/R     | Connect to speakers                    |
+
+- DAC1 = GPIO25. DAC2 = GPIO26 (reserved / laser control)
+- GPIO25 **not** shared with Hall sensor (moved to GPIO21)
+- Volume controlled by `robot.volume(0-100)` in Lua / `volume 80` in shell
+
+---
+
+## 8. Sensors (all on ESP32)
+
+| ESP32 pin | Sensor          | Signal type  | Notes                          |
+|-----------|-----------------|--------------|--------------------------------|
+| GPIO32    | DHT11           | 1-wire       | Temperature + humidity         |
+| GPIO13    | HC-SR04 TRIG    | Digital OUT  | Ultrasonic trigger             |
+| GPIO14    | HC-SR04 ECHO    | Digital IN   | Ultrasonic echo                |
+| GPIO12    | Servo (SG90)    | PWM          | Scanning sweep for distance    |
+| GPIO33    | IR obstacle     | Digital IN   | Active LOW when obstacle       |
+| GPIO34    | Line tracking   | Digital IN   | Active HIGH on line            |
+| GPIO35    | Flame sensor    | Digital IN   | Active LOW when flame          |
+| GPIO36    | Photoresistor   | Analog IN    | 0–4095, 0=dark                 |
+| GPIO39    | Sound sensor    | Analog IN    | 0–4095                         |
+| GPIO21    | Hall/magnetic   | Digital IN   | Moved from GPIO25/34           |
+| GPIO26    | Laser emitter   | Digital OUT  | Pull HIGH to fire              |
+
+⚠️ GPIO34/35/36/39 are **input-only** on ESP32 — no internal pull-up, no output.
+
+---
+
 ## Summary diagram (text form)
 
 ```

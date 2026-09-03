@@ -17,6 +17,7 @@
 #include "apps/browser.h"
 #include "apps/painter.h"
 #include "apps/taskmanager.h"
+#include "apps/hwtest.h"
 #include "apps/browser.h"
 #include "package_manager.h"
 #include "os_manager.h"
@@ -176,6 +177,11 @@ inline String runCommand(const String& cmdLine, String& cwd, Print& out) {
   if (cmd == "browse")   return Browser::shellCmd(rest);
   if (cmd == "paint")    return PainterApp::shellCmd(rest);
   if (cmd == "taskman")  return TaskManagerApp::shellCmd(rest);
+  if (cmd == "hwtest") {
+    String mode = rest.length() ? rest : "all";
+    HwTest::runShell(mode, out);
+    return "";
+  }
   if (cmd == "ps")       return TaskManagerApp::shellCmd("ps");
   if (cmd == "kill")     return TaskManagerApp::shellCmd("kill " + rest);
   if (cmd == "driver")   return DriverManager::shellCmd(rest);

@@ -18,8 +18,11 @@
 #include "apps/browser.h"
 #include "apps/painter.h"
 #include "apps/taskmanager.h"
+#include "apps/hwtest.h"
 #include "sd_card.h"
 #include "video_player.h"
+#include "hook_manager.h"
+#include "audio_manager.h"
 
 // Existing robot HTTP API -- unchanged routes/port, now backed by the
 // shared RobotApi:: functions also used by the "robot" shell command.
@@ -59,9 +62,13 @@ void setup() {
   Serial.begin(115200);
   pinMode(27, OUTPUT); digitalWrite(27, HIGH); // TFT backlight
   RobotApi::begin();
+  HookManager::runEarlyBoot();
 
+  HookManager::runPreWifi();
   WifiManager::connectOrSetup();   // blocks until connected, or enters AP setup mode
+  HookManager::runPostWifi(WiFi.status() == WL_CONNECTED);
   FsManager::begin();
+  HookManager::runPreShell();
   ShellServer::begin();
   TaskManager::begin(ShellServer::runCommand); // lets bg/close/kill re-enter the
                                                 // shell command dispatcher on a
@@ -90,11 +97,15 @@ void setup() {
   DriverManager::loadAll();  // load editable.dvr + all installed drivers
   TftManager::begin();
   SdCard::begin();
+  HwTest::begin();           // load saved touch calibration (if exists)
+  AudioManager::registerShellCommands();
+  HookManager::runBoot();
   TftManager::setTouchCallback([](String cmd) {
     ShellServer::runCommand("robot " + cmd + " 1");
   });
 
   server.begin();
+  AudioManager::beep(880, 120); // boot beep — confirms audio wiring
   Serial.println("Robot HTTP API on port 8083");
   Serial.println("NoorShell on port " + String(SHELL_PORT));
 
@@ -111,6 +122,7 @@ void loop() {
   server.handleClient();
   ShellServer::loop();
   SensorManager::loop();
+  HookManager::runIdle();
   TaskManagerApp::samplePerf();
   TftManager::updateSensors(
     SensorManager::tempC(),

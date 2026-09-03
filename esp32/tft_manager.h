@@ -17,6 +17,7 @@
 #include <TFT_eSPI.h>
 // Touch uses manual HSPI (GPIO14=SCK,13=MOSI,12=MISO,22=CS) — no library needed
 #include <WiFi.h>
+#include "apps/hwtest.h"   // HwTest::applyMap() — runtime touch calibration
 
 // ── Pin definitions ───────────────────────────────────────────────────────────
 // TFT SPI (configured in TFT_eSPI User_Setup.h — set these there too)
@@ -39,7 +40,7 @@
 #define FLAME_PIN    35   // flame sensor
 #define LIGHT_PIN    36   // photoresistor (analog)
 #define SOUND_PIN    39   // sound sensor (analog)
-#define HALL_PIN     34  // moved from GPIO25 (DAC conflict)   // hall/magnetic sensor
+#define HALL_PIN     21  // GPIO21 — moved from GPIO25 (DAC) and GPIO34 (TRACK conflict)
 #define LASER_PIN    26   // laser emit (digital out)
 #define USD_TRIG_PIN 13   // ultrasonic trig (moved from Arduino)
 #define USD_ECHO_PIN 14   // ultrasonic echo (moved from Arduino)
@@ -89,9 +90,16 @@ EyeStyle getEyeStyle(const String& type) {
 }
 
 // ── TFT + Touch objects ───────────────────────────────────────────────────────
+// Definitions live here (header-only project). #pragma once ensures each
+// translation unit sees them at most once, so this is safe as long as
+// tft_manager.h is included from exactly ONE .cpp/.ino (it is: esp32.ino).
+// All other headers that need tft/touch use:  extern TFT_eSPI tft;
+#ifndef TFTMANAGER_OBJECTS_DEFINED
+#define TFTMANAGER_OBJECTS_DEFINED
 TFT_eSPI        tft;
-SPIClass _touchSPI(HSPI);
-bool _touchBegun = false;
+SPIClass        _touchSPI(HSPI);
+bool            _touchBegun = false;
+#endif
 
 uint16_t _readTouch(uint8_t cmd) {
   _touchSPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
@@ -536,9 +544,9 @@ void loop() {
     p.y = map(rawX, 1850, 220, 0, 239);
     p.x = constrain(p.x, 0, 319);
     p.y = constrain(p.y, 0, 239);
-    // Map raw touch coords to screen coords (calibrate if needed)
-    int tx = map(p.x, 200, 3800, 0, 240);
-    int ty = map(p.y, 200, 3800, 0, 320);
+    // Map raw touch coords to screen — uses saved calibration from hwtest
+    int tx, ty;
+    HwTest::applyMap(p.x, p.y, tx, ty);
 
     for (int i = 0; i < BTN_COUNT; i++) {
       const TouchBtn& b = BUTTONS[i];

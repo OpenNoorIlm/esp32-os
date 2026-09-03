@@ -21,6 +21,13 @@
 #include "capability.h"
 #include "task_manager.h"
 #include <WiFi.h>
+// NoorQt Lua bindings — exposes Qt.QFile, Qt.QDir, Qt.QSettings,
+// Qt.QNetworkAccessManager, Qt.QSqlDatabase, Qt.QThread, Qt.QTimer,
+// Qt.QSoundEffect, Qt.QPropertyAnimation, Qt.Easing.*
+#include "lua_qt/lua_qt_bindings.h"
+#include "hook_manager.h"
+#include "audio_manager.h"
+#include "lua_widgets.h"
 
 // IMPORTANT: all Arduino/C++ headers above MUST be included before Lua's
 // sources below. Lua's llex.c #defines a macro literally named "next(ls)",
@@ -1122,7 +1129,28 @@ void begin() {
   lua_pushcfunction(L, l_sysinfo); lua_setfield(L, -2, "sysinfo");
   lua_pushcfunction(L, l_restart); lua_setfield(L, -2, "restart");
   lua_setglobal(L, "esp32");
+  // sensor.* — all hardware sensors accessible from Lua
+  luaL_newlib(L, sensorFuncs); lua_setglobal(L, "sensor");
+
+  // keyboard.* — virtual keyboard
+  luaL_newlib(L, keyboardFuncs); lua_setglobal(L, "keyboard");
+
+  // screen.* — raw TFT drawing (lower-level than ui.*)
+  luaL_newlib(L, screenFuncs); lua_setglobal(L, "screen");
+
   registerNoorUI(L);
+
+  // NoorQt bindings — Qt.QFile, Qt.QDir, Qt.QSettings, Qt.QNetworkAccessManager,
+  // Qt.QSqlDatabase / sqlExec / closeDatabase, Qt.QThread, Qt.QTimer,
+  // Qt.QSoundEffect, Qt.QPropertyAnimation, Qt.Easing.*, Qt.millis(), Qt.sleep()
+  LuaQt::registerAll(L);
+
+  // os.hook() / os.emit() / os.dvr() — boot and event hook system
+  LuaHookBindings::registerOsHooks(L);
+  HookManager::loadDvrFiles();
+
+  // Wire audio_manager.h robot.say/play/beep/volume into the "robot" global
+  LuaAudioBindings::registerAudio(L);
 }
 
 // Shared runner: executes one chunk of Lua source with print() streaming

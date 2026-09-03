@@ -26,7 +26,13 @@
 #include <TFT_eSPI.h>
 #include <SD.h>
 #include <driver/i2s.h>
+#if __has_include(<TJpgDec.h>)
 #include <TJpgDec.h>
+#define NOOR_HAS_TJPGDEC 1
+#else
+#warning "TJpgDec library not installed -- video_player JPEG decode disabled. Install via Library Manager."
+#define NOOR_HAS_TJPGDEC 0
+#endif
 #include "sd_card.h"
 
 // ── Audio config (matches audio player) ──────────────────────────────────────
@@ -171,11 +177,17 @@ void parseAviHeader(File& f) {
 
 // ── JPEG frame decode + display ───────────────────────────────────────────────
 bool decodeFrame(uint8_t* jpegData, uint32_t jpegLen) {
+#if NOOR_HAS_TJPGDEC
   TJpgDec.setJpgScale(1);
   TJpgDec.setCallback(tftOutput);
   TJpgDec.setSwapBytes(true);
   JRESULT res = TJpgDec.drawJpg(_offX, _offY, jpegData, jpegLen);
   return res == JDR_OK;
+#else
+  (void)jpegData; (void)jpegLen;
+  Serial.println("[VP] TJpgDec not installed -- install via Library Manager");
+  return false;
+#endif
 }
 
 // ── Main play function (blocking — call from a FreeRTOS task) ─────────────────

@@ -40,6 +40,7 @@
 #include "fs_manager.h"
 #include "lua_engine.h"
 
+#include <TFT_eSPI.h>
 extern TFT_eSPI tft;
 
 namespace DriverManager {
