@@ -104,11 +104,12 @@ inline void beep(uint32_t freqHz = 880, uint32_t durationMs = 200) {
   if (freqHz == 0) { silence(); return; }
   // Use LEDC on buzzer pin if wired, else DAC sine
 #ifdef AUDIO_BUZZER_PIN
-  ledcSetup(AUDIO_LEDC_CHANNEL, freqHz, 8);
-  ledcAttachPin(AUDIO_BUZZER_PIN, AUDIO_LEDC_CHANNEL);
-  ledcWrite(AUDIO_LEDC_CHANNEL, 128); // 50% duty
+  // Arduino ESP32 core 3.x API: ledcAttach(pin, freq, resolution)
+  ledcAttach(AUDIO_BUZZER_PIN, freqHz, 8);
+  ledcWrite(AUDIO_BUZZER_PIN, 128); // 50% duty
   delay(durationMs);
-  ledcWrite(AUDIO_LEDC_CHANNEL, 0);
+  ledcWrite(AUDIO_BUZZER_PIN, 0);
+  ledcDetach(AUDIO_BUZZER_PIN);
 #else
   // Synthesise sine on DAC
   _i2sBegin(freqHz * 32);

@@ -475,7 +475,7 @@ void tftEdit(const String& filePath) {
 String shellCmd(const String& args) {
   // nano handled by shell_server with session management
   // tedit opens TFT editor
-  String path = FsManager::resolve(args);
+  String path = FsManager::toRealPath("/", args);
   if (SPIFFS.exists(path)) {
     tftEdit(path);
     return "OK\n";

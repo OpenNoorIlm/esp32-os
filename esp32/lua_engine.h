@@ -17,6 +17,21 @@
 // Thin C++ facade over the embedded Lua interpreter (lua_src/lua-master,
 // built via lua_engine.cpp as a single-translation-unit "onelua.c" library).
 // Keeps every raw lua_State*/lua_* C-API detail out of shell_server.h.
+
+// ── StringPrint ───────────────────────────────────────────────────────────────
+// Adapts Print& to String for callers that need eval() output as a String.
+// Usage:  StringPrint sp; LuaEngine::eval(code, sp); String result = sp.buf;
+class StringPrint : public Print {
+public:
+  size_t write(uint8_t c) override { buf += (char)c; return 1; }
+  size_t write(const uint8_t* b, size_t n) override {
+    buf.reserve(buf.length()+n);
+    for (size_t i=0;i<n;i++) buf+=(char)b[i];
+    return n;
+  }
+  String buf;
+};
+
 namespace LuaEngine {
 
 // Lazily creates the global lua_State on first use (also callable up front

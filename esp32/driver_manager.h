@@ -41,6 +41,7 @@
 #include "lua_engine.h"
 
 #include <TFT_eSPI.h>
+#include "tft_manager.h"
 extern TFT_eSPI tft;
 
 namespace DriverManager {
@@ -178,9 +179,8 @@ bool restore(const String& name) {
 String runUndo(const String& name) {
   String undo = readFile(undoPath(name));
   if (undo.isEmpty()) return "No undo script for " + name + "\n";
-  String out;
-  LuaEngine::eval(undo, out);
-  return "Undo ran for " + name + ":\n" + out;
+  StringPrint _sp_undo; LuaEngine::eval(undo, _sp_undo);
+  return "Undo ran for " + name + ":\n" + _sp_undo.buf;
 }
 
 // ── TFT reboot prompt ─────────────────────────────────────────────────────────
@@ -299,11 +299,11 @@ String install(const String& srcPath, bool forceReboot = false) {
   }
 
   // Validate: try running in Lua sandbox
-  String testOut;
-  bool ok = LuaEngine::eval("-- DVR validation\n" + src, testOut);
+  StringPrint _sp_testOut;
+  bool ok = LuaEngine::eval("-- DVR validation\n" + src, _sp_testOut);
   if (!ok) {
     // Restore backup, show error
-    String errMsg = "Validation failed:\n" + testOut;
+    String errMsg = "Validation failed:\n" + _sp_testOut.buf;
     tftErrorScreen(meta.name, errMsg);
     restore(meta.name);
     return errMsg;
@@ -342,12 +342,12 @@ String install(const String& srcPath, bool forceReboot = false) {
 // ── Remove driver ─────────────────────────────────────────────────────────────
 String remove(const String& name) {
   if (!fileExists(dvrPath(name))) return "Driver '" + name + "' not found.\n";
-  String out = runUndo(name);
+  String undoResult = runUndo(name);
   backup(name); // keep backup of removed driver
   deleteFile(dvrPath(name));
   deleteFile(cachePath(name));
   removeFromManifest(name);
-  return "Driver '" + name + "' removed.\n" + out;
+  return "Driver '" + name + "' removed.\n" + undoResult;
 }
 
 // ── Load all drivers at boot ──────────────────────────────────────────────────
@@ -409,17 +409,17 @@ void loadAll() {
   for (auto& name : list) {
     String src = readFile(dvrPath(name));
     if (src.isEmpty()) continue;
-    String out;
-    bool ok = LuaEngine::eval(src, out);
+    StringPrint _sp_out;
+    bool ok = LuaEngine::eval(src, _sp_out);
     if (!ok) {
       // Log error
       File logF = SPIFFS.open("/logs/crash.log", "a");
       if (logF) {
-        logF.print("[boot] driver '" + name + "' error: " + out + "\n");
+        logF.print("[boot] driver '" + name + "' error: " + _sp_out.buf + "\n");
         logF.close();
       }
       // Show TFT error screen
-      tftErrorScreen(name, out);
+      tftErrorScreen(name, _sp_out.buf);
       // If editable.dvr failed restore backup
       if (name == "editable") restore("editable");
     }
@@ -445,9 +445,9 @@ String shellCmd(const String& args) {
   if (sub == "reload") {
     String src = readFile(dvrPath(rest));
     if (src.isEmpty()) return "Driver '" + rest + "' not found.\n";
-    String out;
-    LuaEngine::eval(src, out);
-    return "Reloaded " + rest + ":\n" + out;
+    StringPrint _sp_out;
+    LuaEngine::eval(src, _sp_out);
+    return "Reloaded " + rest + ":\n" + _sp_out.buf;
   }
   if (sub == "list") {
     auto list = loadManifest();

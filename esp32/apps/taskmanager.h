@@ -457,7 +457,7 @@ bool handleTouch(int tx, int ty) {
       } else if (tx >= 196) {
         // RELOAD
         String src = DriverManager::readFile(DriverManager::dvrPath(list[rowIdx]));
-        String out; LuaEngine::eval(src, out);
+        LuaEngine::eval(src, Serial);
         drawContent();
       }
     }
