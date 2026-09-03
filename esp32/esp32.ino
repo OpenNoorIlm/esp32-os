@@ -1,3 +1,4 @@
+#define SENSOR_MANAGER_IMPLEMENTATION
 #include <WiFi.h>
 #include <WebServer.h>
 #include <ESP32Servo.h>

@@ -461,6 +461,8 @@ void begin() {
   _touchSPI.begin(14, 12, 13, TOUCH_CS); // SCK,MISO,MOSI,CS
   pinMode(TOUCH_CS, OUTPUT);
   digitalWrite(TOUCH_CS, HIGH);
+  touch.begin();
+  touch.setRotation(0);
   _touchBegun = true;
 
   // Boot splash

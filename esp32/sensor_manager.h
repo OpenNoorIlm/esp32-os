@@ -38,6 +38,7 @@
 namespace SensorManager {
 
 // ── Hardware objects ──────────────────────────────────────────────────────────
+#ifdef SENSOR_MANAGER_IMPLEMENTATION
 DHT   _dht(SM_DHT_PIN, SM_DHT_TYPE);
 Servo _servo;
 
@@ -58,9 +59,17 @@ bool  _laserOn    = false;  // laser emitter state
 unsigned long _lastDhtRead    = 0;
 unsigned long _lastSlowRead   = 0;
 unsigned long _lastFastRead   = 0;
+#else
+extern DHT   _dht;
+extern Servo _servo;
+extern float _tempC, _tempF, _humidity, _distance;
+extern int _lightLevel, _soundLevel;
+extern bool _obstacle, _tracking, _flame, _magnetic, _tripwire, _laserOn;
+extern unsigned long _lastDhtRead, _lastSlowRead, _lastFastRead;
+#endif
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-void begin() {
+inline void begin() {
   _dht.begin();
 
   pinMode(SM_AVOID_PIN,  INPUT);
@@ -80,7 +89,7 @@ void begin() {
 }
 
 // ── Ultrasonic distance ───────────────────────────────────────────────────────
-float measureDistance() {
+inline float measureDistance() {
   digitalWrite(SM_USD_TRIG, LOW);
   delayMicroseconds(2);
   digitalWrite(SM_USD_TRIG, HIGH);
@@ -91,7 +100,7 @@ float measureDistance() {
 }
 
 // ── Sweep servo and get distance at angle ─────────────────────────────────────
-float distanceAtAngle(int angle) {
+inline float distanceAtAngle(int angle) {
   _servo.write(constrain(angle, 0, 180));
   delay(300);
   float d = measureDistance();
@@ -101,20 +110,20 @@ float distanceAtAngle(int angle) {
 }
 
 // ── Laser control ─────────────────────────────────────────────────────────────
-void setLaser(bool on) {
+inline void setLaser(bool on) {
   _laserOn = on;
   digitalWrite(SM_LASER_PIN, on ? HIGH : LOW);
 }
 
-bool laserOn() { return _laserOn; }
+inline bool laserOn() { return _laserOn; }
 
 // ── Servo control ─────────────────────────────────────────────────────────────
-void setServo(int angle) {
+inline void setServo(int angle) {
   _servo.write(constrain(angle, 0, 180));
 }
 
 // ── Fast read (obstacle, flame, tracking, hall) — call every 50ms ────────────
-void readFast() {
+inline void readFast() {
   unsigned long now = millis();
   if (now - _lastFastRead < 50) return;
   _lastFastRead = now;
@@ -126,7 +135,7 @@ void readFast() {
 }
 
 // ── Slow read (analog sensors + distance) — call every 500ms ─────────────────
-void readSlow() {
+inline void readSlow() {
   unsigned long now = millis();
   if (now - _lastSlowRead < 500) return;
   _lastSlowRead = now;
@@ -137,7 +146,7 @@ void readSlow() {
 }
 
 // ── DHT read — call every 2 seconds (DHT11 is slow) ─────────────────────────
-void readDht() {
+inline void readDht() {
   unsigned long now = millis();
   if (now - _lastDhtRead < 2000) return;
   _lastDhtRead = now;
@@ -149,30 +158,30 @@ void readDht() {
 }
 
 // ── Main loop — call every loop() ────────────────────────────────────────────
-void loop() {
+inline void loop() {
   readFast();
   readSlow();
   readDht();
 }
 
 // ── Getters ───────────────────────────────────────────────────────────────────
-float tempC()      { return _tempC; }
-float tempF()      { return _tempF; }
-float humidity()   { return _humidity; }
-float distance()   { return _distance; }
-int   lightLevel() { return _lightLevel; }
-int   soundLevel() { return _soundLevel; }
-bool  obstacle()   { return _obstacle; }
-bool  tracking()   { return _tracking; }
-bool  flame()      { return _flame; }
-bool  magnetic()   { return _magnetic; }
+inline float tempC()      { return _tempC; }
+inline float tempF()      { return _tempF; }
+inline float humidity()   { return _humidity; }
+inline float distance()   { return _distance; }
+inline int   lightLevel() { return _lightLevel; }
+inline int   soundLevel() { return _soundLevel; }
+inline bool  obstacle()   { return _obstacle; }
+inline bool  tracking()   { return _tracking; }
+inline bool  flame()      { return _flame; }
+inline bool  magnetic()   { return _magnetic; }
 
 // Percentage helpers
-int lightPercent() { return map(_lightLevel, 0, 4095, 0, 100); }
-int soundPercent() { return map(_soundLevel, 0, 4095, 0, 100); }
+inline int lightPercent() { return map(_lightLevel, 0, 4095, 0, 100); }
+inline int soundPercent() { return map(_soundLevel, 0, 4095, 0, 100); }
 
 // ── Shell command handler ─────────────────────────────────────────────────────
-String shellCmd(const String& args) {
+inline String shellCmd(const String& args) {
   if (args == "temp" || args == "temperature") {
     return "Temperature: " + String(_tempC, 1) + "C / " + String(_tempF, 1) + "F\n"
            "Humidity: " + String(_humidity, 1) + "%\n";
