@@ -88,7 +88,7 @@ public:
 
   void append(const QSqlField& f)   { _fields.push_back(f); }
   void insert(int i, const QSqlField& f) {
-    if(i<=(int)_fields.size()) _fields.insert(i,f);
+    if(i<=(int)_fields.size()) _fields.insert(_fields.begin()+i,f);
   }
   void replace(int i, const QSqlField& f){
     if(i<(int)_fields.size()) _fields[i]=f;
@@ -204,7 +204,7 @@ public:
 
   bool        isValid()          const { return _pos>=0 && _pos<(int)_results.size(); }
   bool        isActive()         const { return true; }
-  bool        isSelect()         const { return _lastSql.toLowerCase().startsWith("select"); }
+  bool        isSelect()         const { String s=_lastSql; s.toLowerCase(); return s.startsWith("select"); }
   int         size()             const { return (int)_results.size(); }
   int         numRowsAffected()  const { return _rowsAffected; }
   QSqlError   lastError()        const { return _err; }

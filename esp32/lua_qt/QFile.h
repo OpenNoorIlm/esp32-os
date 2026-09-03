@@ -161,11 +161,11 @@ public:
     qint64 n=_f.write((const uint8_t*)data,(size_t)len);
     bytesWritten.emit(n); return n;
   }
-  bool   atEnd()          const override { return _f && !_f.available(); }
-  qint64 bytesAvailable() const override { return _f?_f.available():0; }
-  bool   seek(qint64 pos) override       { return _f && _f.seek((uint32_t)pos); }
-  qint64 pos()            const override { return _f?_f.position():0; }
-  qint64 size()           const override { return _f?_f.size():0; }
+  bool   atEnd()          const override { return _f && !const_cast<fs::File&>(_f).available(); }
+  qint64 bytesAvailable() const override { return _f?const_cast<fs::File&>(_f).available():0; }
+  bool   seek(qint64 pos)       override { return _f && _f.seek((uint32_t)pos); }
+  qint64 pos()            const override { return _f?const_cast<fs::File&>(_f).position():0; }
+  qint64 size()           const override { return _f?const_cast<fs::File&>(_f).size():0; }
 
   bool flush() { return true; } // SPIFFS auto-flushes
   bool remove() { close(); return SPIFFS.remove(_path); }

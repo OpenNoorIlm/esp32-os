@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 #include <TFT_eSPI.h>
+#include <XPT2046_Touchscreen.h>
 // Touch uses manual HSPI (GPIO14=SCK,13=MOSI,12=MISO,22=CS) — no library needed
 #include <WiFi.h>
 #include "apps/hwtest.h"   // HwTest::applyMap() — runtime touch calibration
@@ -90,15 +91,14 @@ EyeStyle getEyeStyle(const String& type) {
 }
 
 // ── TFT + Touch objects ───────────────────────────────────────────────────────
-// Definitions live here (header-only project). #pragma once ensures each
-// translation unit sees them at most once, so this is safe as long as
-// tft_manager.h is included from exactly ONE .cpp/.ino (it is: esp32.ino).
-// All other headers that need tft/touch use:  extern TFT_eSPI tft;
+// Shared display objects are defined once in esp32.ino. Headers that include
+// this file must only refer to the shared instances.
 #ifndef TFTMANAGER_OBJECTS_DEFINED
 #define TFTMANAGER_OBJECTS_DEFINED
-TFT_eSPI        tft;
-SPIClass        _touchSPI(HSPI);
-bool            _touchBegun = false;
+extern TFT_eSPI tft;
+extern XPT2046_Touchscreen touch;
+extern SPIClass _touchSPI;
+extern bool _touchBegun;
 #endif
 
 uint16_t _readTouch(uint8_t cmd) {

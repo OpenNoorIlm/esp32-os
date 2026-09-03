@@ -286,8 +286,8 @@ public:
     return _client.readStringUntil('\n');
   }
 
-  bool    atEnd()         const { return !_client.available(); }
-  qint64  bytesAvailable()const { return _client.available(); }
+  bool    atEnd()         const { return !const_cast<WiFiClient&>(_client).available(); }
+  qint64  bytesAvailable()const { return const_cast<WiFiClient&>(_client).available(); }
 
   // ── State ─────────────────────────────────────────────────────────────────
   SocketState state()     const { return _state; }

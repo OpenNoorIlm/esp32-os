@@ -802,7 +802,13 @@ private:
 // ════════════════════════════════════════════════════════════════════════════
 class QTimer : public QObject {
 public:
-  explicit QTimer(QObject* parent=nullptr) : QObject(parent) {}
+  Signal<void> timeout{"timeout"};
+  Signal<void> started_sig{"started"};
+  Signal<void> stopped_sig{"stopped"};
+
+  explicit QTimer(QObject* parent=nullptr) : QObject(parent) {
+    timeout.bind(this); started_sig.bind(this); stopped_sig.bind(this);
+  }
 
   void start(int msec)         { _interval=msec; _active=true; _lastFire=millis(); emit_signal("started"); }
   void start()                 { start(_interval); }

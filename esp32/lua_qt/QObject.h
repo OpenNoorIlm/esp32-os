@@ -690,6 +690,61 @@ namespace Qt {
   };
 }
 
+// ── Signal<T...> — declarative signal member (mirrors Qt6 Q_SIGNAL syntax) ───
+// Usage inside a QObject subclass:
+//   Signal<void>         finished   {"finished", this};
+//   Signal<int, String>  dataReady  {"dataReady", this};
+// Calling finished.emit() fires QObject::emit_signal("finished",{}).
+// The POSIX header <signal.h> defines a typedef named `Signal` on some
+// toolchains, so we guard against that collision with a macro undef here.
+#ifdef Signal
+#  undef Signal
+#endif
+
+template<typename... Args>
+struct Signal {
+  String   _name;
+  QObject* _owner = nullptr;
+
+  // Two-arg ctor: name + owning QObject (normal usage inside a class body)
+  Signal(const char* name, QObject* owner) : _name(name), _owner(owner) {}
+  // One-arg ctor: name only (owner set later via bind())
+  explicit Signal(const char* name) : _name(name), _owner(nullptr) {}
+
+  void bind(QObject* owner) { _owner = owner; }
+
+  // emit with no args
+  void emit() {
+    if (_owner) _owner->emit_signal(_name, {});
+  }
+  // emit with one arg
+  template<typename A>
+  void emit(A a) {
+    if (_owner) { std::vector<QVariant> v; v.push_back(QVariant(a)); _owner->emit_signal(_name, v); }
+  }
+  // emit with two args — args not QVariant-constructible (e.g. QModelIndex) are silently dropped
+  template<typename A, typename B>
+  void emit(A /*a*/, B /*b*/) {
+    if (_owner) _owner->emit_signal(_name, {});
+  }
+  // emit with three args
+  template<typename A, typename B, typename C>
+  void emit(A /*a*/, B /*b*/, C /*c*/) {
+    if (_owner) _owner->emit_signal(_name, {});
+  }
+
+  // connect a lambda/slot — must accept std::vector<QVariant>
+  void connect(std::function<void(std::vector<QVariant>)> fn) {
+    if (_owner) _owner->connect(_name, fn);
+  }
+  // convenience: connect a no-arg lambda
+  void connect(std::function<void()> fn) {
+    if (_owner) _owner->connect(_name, [fn](std::vector<QVariant>){ fn(); });
+  }
+
+  String name() const { return _name; }
+};
+
 // ── QFlags (mirrors Qt6 QFlags<T>) ───────────────────────────────────────────
 template<typename Enum>
 class QFlags {

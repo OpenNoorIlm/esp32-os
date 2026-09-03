@@ -215,8 +215,8 @@ public:
   QPropertyAnimation(QObject* target, const QString& propName, QObject* parent=nullptr)
     : QVariantAnimation(parent), _target(target), _propName(propName) {
     // When value changes, set it on the target
-    valueChanged.connect([this](const QVariant& v){
-      if(_target) _target->setProperty(_propName, v);
+    valueChanged.connect([this](std::vector<QVariant> args){
+      if(_target && !args.empty()) _target->setProperty(_propName, args[0]);
     });
   }
 
@@ -292,7 +292,7 @@ private:
   void _runNext(int idx) {
     if(idx>=(int)_anims.size()){ finished.emit(); return; }
     auto* a=_anims[idx];
-    a->finished.connect([this,idx]{ _runNext(idx+1); });
+    a->finished.connect([this,idx](std::vector<QVariant>){ _runNext(idx+1); });
     a->start();
   }
 };
@@ -329,7 +329,7 @@ public:
     if(_anims.empty()){ finished.emit(); return; }
     _done=0;
     for(auto* a:_anims){
-      a->finished.connect([this,p]{
+      a->finished.connect([this,p](std::vector<QVariant>){
         if(++_done>=(int)_anims.size()){ finished.emit(); if(p==DeleteWhenStopped)deleteLater(); }
       });
       a->start();

@@ -840,7 +840,7 @@ public:
   bool isSelected()           const { return _selected; }
   void setHidden(bool h)            { _hidden=h; }
   bool isHidden()             const { return _hidden; }
-  void setCheckState(Qt::CheckState s){ _checkState=s; }
+  void setCheckState(Qt::CheckState s){ _checkState=(int)s; }
   Qt::CheckState checkState() const { return (Qt::CheckState)_checkState; }
   void setFlags(Qt::ItemFlags f)    { _flags=f; }
   Qt::ItemFlags flags()       const { return _flags; }
@@ -1433,8 +1433,9 @@ public:
   int  handleWidth()             const { return _handleW; }
   void setSizes(QList<int> sizes)      { _sizes=sizes;_reflow(); }
   QList<int> sizes()             const { return _sizes; }
-  void setCollapsible(int idx,bool c)  { if(idx>=0&&idx<(int)_collapsible.size())_collapsible[idx]=c; }
-  void setChildrenCollapsible(bool c)  { for(auto&b:_collapsible)b=c; }
+  // Use uint8_t instead of bool to avoid std::vector<bool> proxy-reference issue
+  void setCollapsible(int idx,bool c)  { if(idx>=0&&idx<(int)_collapsible.size())_collapsible[idx]=(uint8_t)c; }
+  void setChildrenCollapsible(bool c)  { for(int i=0;i<(int)_collapsible.size();i++)_collapsible[i]=(uint8_t)c; }
   void moveSplitter(int pos,int idx)   { if(idx>=0&&idx<(int)_sizes.size())_sizes[idx]=pos;_reflow(); }
   void refresh()                       { _reflow(); }
   QList<int> indexOf()           const { return {}; }
@@ -1471,7 +1472,7 @@ public:
 private:
   QList<QWidget*> _panels;
   QList<int> _sizes;
-  QList<bool> _collapsible;
+  QList<uint8_t> _collapsible;  // uint8_t avoids std::vector<bool> specialization
   Qt::Orientation _orientation=Qt::Horizontal;
   int _handleW=4;
 
@@ -1481,7 +1482,7 @@ private:
     int total=h?_w:_h, n=_panels.size();
     int each=(total-(n-1)*_handleW)/max(1,n);
     while((int)_sizes.size()<n)_sizes.push_back(each);
-    while((int)_collapsible.size()<n)_collapsible.push_back(true);
+    while((int)_collapsible.size()<n)_collapsible.push_back((uint8_t)1);
     int pos=h?_x:_y;
     for(int i=0;i<n;i++){
       if(_sizes[i]<=0)_sizes[i]=each;

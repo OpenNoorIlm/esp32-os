@@ -263,7 +263,7 @@ public:
   std::vector<QString> childKeys(const QString& group="") const {
     std::vector<QString> keys;
     QString prefix=group.isEmpty()?_group:group;
-    if(!prefix.isEmpty()&&!prefix.endsWith('/')) prefix+='/';
+    if(!prefix.isEmpty()&&!prefix.endsWith("/")) prefix+='/';
     for(auto& kv:_data){
       if(kv.first.startsWith(prefix)){
         QString k=kv.first.substring(prefix.length());

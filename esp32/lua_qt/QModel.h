@@ -34,23 +34,6 @@ private:
   bool  _valid=false;
 };
 
-// ── ItemDataRole ──────────────────────────────────────────────────────────────
-namespace Qt {
-  enum ItemDataRole {
-    DisplayRole=0, DecorationRole=1, EditRole=2, ToolTipRole=3,
-    StatusTipRole=4, WhatsThisRole=5, FontRole=6, TextAlignmentRole=7,
-    BackgroundRole=8, ForegroundRole=9, CheckStateRole=10,
-    SizeHintRole=13, UserRole=0x0100
-  };
-  enum ItemFlag {
-    NoItemFlags=0, ItemIsSelectable=1, ItemIsEditable=2,
-    ItemIsEnabled=4, ItemIsCheckable=8, ItemIsUserCheckable=16
-  };
-  enum CheckState { Unchecked=0, PartiallyChecked=1, Checked=2 };
-  enum MatchFlag  { MatchExactly=0, MatchContains=1, MatchStartsWith=2,
-                    MatchEndsWith=3, MatchCaseSensitive=16, MatchRecursive=512 };
-  enum SortOrder  { AscendingOrder=0, DescendingOrder=1 };
-}
 
 // ── QAbstractItemModel ────────────────────────────────────────────────────────
 class QAbstractItemModel : public QObject {
@@ -83,8 +66,8 @@ public:
   virtual bool removeRows(int row, int count, const QModelIndex& parent=QModelIndex()) {
     (void)row;(void)count;(void)parent; return false;
   }
-  virtual bool insertColumns(int,int,const QModelIndex&=QModelIndex()){ return false; }
-  virtual bool removeColumns(int,int,const QModelIndex&=QModelIndex()){ return false; }
+  virtual bool insertColumns(int,int,const QModelIndex& =QModelIndex()){ return false; }
+  virtual bool removeColumns(int,int,const QModelIndex& =QModelIndex()){ return false; }
 
   virtual void sort(int col, Qt::SortOrder order=Qt::AscendingOrder){ (void)col;(void)order; }
 
@@ -146,7 +129,7 @@ public:
     for(auto* i:items) appendRow(i);
   }
   void insertRow(int row, QStandardItem* child) {
-    if(row<=(int)_children.size()) { _children.insert(row,child); child->_parent=this; }
+    if(row<=(int)_children.size()) { _children.insert(_children.begin()+row,child); child->_parent=this; }
   }
   void removeRow(int row) {
     if(row<(int)_children.size()){ delete _children[row]; _children.erase(_children.begin()+row); }
@@ -262,10 +245,10 @@ public:
     rowsInserted.emit(QModelIndex(),(int)_rows.size()-1,(int)_rows.size()-1);
   }
   void insertRow(int row, QStandardItem* i) {
-    if(row<=(int)_rows.size()) _rows.insert(row,{i});
+    if(row<=(int)_rows.size()) _rows.insert(_rows.begin()+row,{i});
     rowsInserted.emit(QModelIndex(),row,row);
   }
-  bool removeRow(int row, const QModelIndex&=QModelIndex()) {
+  bool removeRow(int row, const QModelIndex& =QModelIndex()) {
     if(row>=(int)_rows.size()) return false;
     for(auto* i:_rows[row]) delete i;
     _rows.erase(_rows.begin()+row);
@@ -336,7 +319,7 @@ public:
 
   void setSourceModel(QAbstractItemModel* m) {
     _src=m;
-    if(m){ m->dataChanged.connect([this](QModelIndex a,QModelIndex b){ dataChanged.emit(a,b); }); }
+    if(m){ m->dataChanged.connect([this](std::vector<QVariant>){ dataChanged.emit(QModelIndex(),QModelIndex()); }); }
     _rebuild();
   }
   QAbstractItemModel* sourceModel() const { return _src; }
@@ -352,9 +335,9 @@ public:
     _sortCol=col; _sortOrder=order; _rebuild();
   }
 
-  int rowCount(const QModelIndex&=QModelIndex())    const override { return (int)_map.size(); }
-  int columnCount(const QModelIndex&=QModelIndex()) const override { return _src?_src->columnCount():0; }
-  QModelIndex index(int row, int col, const QModelIndex&=QModelIndex()) const override {
+  int rowCount(const QModelIndex& =QModelIndex())    const override { return (int)_map.size(); }
+  int columnCount(const QModelIndex& =QModelIndex()) const override { return _src?_src->columnCount():0; }
+  QModelIndex index(int row, int col, const QModelIndex& =QModelIndex()) const override {
     return createIndex(row,col,nullptr);
   }
   QVariant data(const QModelIndex& idx, int role=Qt::DisplayRole) const override {

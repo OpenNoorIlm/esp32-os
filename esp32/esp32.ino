@@ -24,6 +24,11 @@
 #include "hook_manager.h"
 #include "audio_manager.h"
 
+TFT_eSPI tft;
+XPT2046_Touchscreen touch(TOUCH_CS);
+SPIClass _touchSPI(HSPI);
+bool _touchBegun = false;
+
 // Existing robot HTTP API -- unchanged routes/port, now backed by the
 // shared RobotApi:: functions also used by the "robot" shell command.
 WebServer server(8083);
