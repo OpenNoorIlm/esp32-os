@@ -41,10 +41,10 @@ static const int ROW_COUNT = 4;
 #define KB_CLR_INPUT   0x0000
 #define KB_CLR_BORDER  0x07FF  // cyan
 
-String _inputBuffer = "";
-bool   _active      = false;
-bool   _shift       = false;
-bool   _submitted   = false;
+static String _inputBuffer = "";
+static bool   _active      = false;
+static bool   _shift       = false;
+static bool   _submitted   = false;
 
 // ── Draw input bar ────────────────────────────────────────────────────────────
 inline void drawInputBar() {

@@ -202,14 +202,14 @@ static int _theme = 0;
 static ThemePalette _custom;
 static bool _useCustom = false;
 
-ThemePalette& T() { return _useCustom ? _custom : THEMES[_theme]; }
+inline ThemePalette& T() { return _useCustom ? _custom : THEMES[_theme]; }
 
-void setTheme(const String& name) {
+inline void setTheme(const String& name) {
   _useCustom = false;
   for (int i=0;i<8;i++) if(THEMES[i].name==name){_theme=i;return;}
 }
 
-void setThemeCustom(ThemePalette p) { _custom=p; _useCustom=true; }
+inline void setThemeCustom(ThemePalette p) { _custom=p; _useCustom=true; }
 
 // ════════════════════════════════════════════════════════════════════════════
 // LSS STYLE (Lua Style Sheets)
@@ -297,7 +297,7 @@ static String _clipboard;
 static String  _toastText;
 static unsigned long _toastUntil = 0;
 
-void showToast(const String& text, int ms=2000) {
+inline void showToast(const String& text, int ms=2000) {
   _toastText  = text;
   _toastUntil = millis() + ms;
   // Draw immediately
@@ -310,7 +310,7 @@ void showToast(const String& text, int ms=2000) {
   tft.print(text);
 }
 
-void tickToast() {
+inline void tickToast() {
   if (_toastUntil > 0 && millis() > _toastUntil) {
     _toastUntil = 0;
     tft.fillRect(0, 293, 240, 27, T().bg);
@@ -613,7 +613,10 @@ class RadioButton : public Widget {
 public:
   String group,text;
   bool   checked=false;
-  static std::map<String,RadioButton*> _groupSelected;
+  static std::map<String,RadioButton*>& groupSelected() {
+    static std::map<String,RadioButton*> selected;
+    return selected;
+  }
   RadioButton(const String& grp, const String& t) : group(grp),text(t) {
     style.bg=T().bg; style.borderWidth=0;
   }
@@ -633,19 +636,17 @@ public:
     if (!style.enabled||!style.visible) return false;
     if (contains(tx,ty)) {
       // Deselect other in group
-      if (_groupSelected.count(group) && _groupSelected[group]!=this) {
-        _groupSelected[group]->checked=false;
-        _groupSelected[group]->draw();
+      if (groupSelected().count(group) && groupSelected()[group]!=this) {
+        groupSelected()[group]->checked=false;
+        groupSelected()[group]->draw();
       }
-      checked=true; _groupSelected[group]=this;
+      checked=true; groupSelected()[group]=this;
       draw(); emit("toggled","true"); emit("selected",text);
       return true;
     }
     return false;
   }
 };
-std::map<String,RadioButton*> RadioButton::_groupSelected;
-
 // ── Slider ────────────────────────────────────────────────────────────────────
 class Slider : public Widget {
 public:
