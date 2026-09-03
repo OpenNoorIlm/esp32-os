@@ -11,6 +11,18 @@
 #include <map>
 #include <memory>
 #include <typeinfo>
+#include <algorithm>
+
+// Arduino defines min/max as macros that conflict with std::min/max and
+// std::vector iterator arithmetic. Undefine them here so C++ templates work.
+#ifdef min
+#  undef min
+#endif
+#ifdef max
+#  undef max
+#endif
+using std::min;
+using std::max;
 
 // ── Primitive typedefs (mirrors Qt's global typedefs) ─────────────────────────
 typedef long long  qint64;

@@ -5,6 +5,19 @@
 #pragma once
 #include "QWidget.h"
 
+// Arduino defines min/max as macros which break C++ template/iterator
+// arithmetic inside std::vector. Undefine them here; they'll be
+// redefined by subsequent Arduino headers if needed.
+#ifdef min
+#  undef min
+#endif
+#ifdef max
+#  undef max
+#endif
+#include <algorithm>
+using std::min;
+using std::max;
+
 namespace NoorQt {
 
 // ── QLayoutItem ───────────────────────────────────────────────────────────────
@@ -159,7 +172,8 @@ public:
   }
   void insertWidget(int idx,QWidget* w,int stretch=0,Qt::Alignment align=Qt::AlignLeft){
     Entry e; e.item=new QWidgetItem(w); e.stretch=stretch; e.align=align;
-    _entries.insert(_entries.begin()+min(idx,(int)_entries.size()),e); invalidate();
+    int clamp=idx<0?0:idx>(int)_entries.size()?(int)_entries.size():idx;
+    _entries.insert(clamp,e); invalidate();
   }
 
   void addLayout(QLayout* l,int stretch=0){
@@ -168,7 +182,8 @@ public:
   }
   void insertLayout(int idx,QLayout* l,int stretch=0){
     Entry e; e.item=l; e.stretch=stretch;
-    _entries.insert(_entries.begin()+min(idx,(int)_entries.size()),e); invalidate();
+    int clamp=idx<0?0:idx>(int)_entries.size()?(int)_entries.size():idx;
+    _entries.insert(clamp,e); invalidate();
   }
 
   void addSpacing(int size)           { addItem(new QSpacerItem(isHoriz()?size:0,isHoriz()?0:size)); }
@@ -183,7 +198,8 @@ public:
   }
   void insertItem(int idx,QLayoutItem* item){
     Entry e; e.item=item;
-    _entries.insert(_entries.begin()+min(idx,(int)_entries.size()),e); invalidate();
+    int clamp=idx<0?0:idx>(int)_entries.size()?(int)_entries.size():idx;
+    _entries.insert(clamp,e); invalidate();
   }
 
   int  count() const override { return _entries.size(); }
@@ -363,7 +379,7 @@ public:
   void addRow(QWidget* w)                          { Row r; r.fieldW=w; r.spanning=true; _rows.push_back(r); invalidate(); }
   void addRow(QLayout* l)                          { Row r; r.field=l; r.spanning=true; _rows.push_back(r); invalidate(); }
 
-  void insertRow(int idx,const QString& label,QWidget* field){ Row r; r.labelStr=label; r.fieldW=field; _rows.insert(_rows.begin()+idx,r); invalidate(); }
+  void insertRow(int idx,const QString& label,QWidget* field){ Row r; r.labelStr=label; r.fieldW=field; int clamp=idx<0?0:idx>(int)_rows.size()?(int)_rows.size():idx; _rows.insert(clamp,r); invalidate(); }
   void removeRow(int idx){ if(idx>=0&&idx<(int)_rows.size())_rows.erase(_rows.begin()+idx); invalidate(); }
 
   int  rowCount() const { return _rows.size(); }
@@ -441,7 +457,8 @@ public:
   void addItem(QLayoutItem* item) override { _items.push_back(item); invalidate(); }
   void addWidget(QWidget* w)              { addItem(new QWidgetItem(w)); }
   void insertWidget(int idx,QWidget* w)   {
-    _items.insert(_items.begin()+min(idx,(int)_items.size()),new QWidgetItem(w));
+    int clamp=idx<0?0:idx>(int)_items.size()?(int)_items.size():idx;
+    _items.insert(clamp,new QWidgetItem(w));
     invalidate();
   }
   void removeWidget(QWidget* w)           {

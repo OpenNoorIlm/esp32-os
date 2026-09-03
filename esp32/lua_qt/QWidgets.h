@@ -737,7 +737,7 @@ public:
 
   void addItem(const QString& text,QVariant data=QVariant()){ _items.push_back({text,data});update(); }
   void addItems(const QStringList& texts){ for(auto&t:texts)addItem(t);update(); }
-  void insertItem(int idx,const QString& text,QVariant data=QVariant()){ _items.insert(_items.begin()+min(idx,(int)_items.size()),{text,data});update(); }
+  void insertItem(int idx,const QString& text,QVariant data=QVariant()){ int clamp=idx<0?0:idx>(int)_items.size()?(int)_items.size():idx; _items.insert(clamp,{text,data});update(); }
   void insertItems(int idx,const QStringList& texts){ for(int i=0;i<(int)texts.size();i++)insertItem(idx+i,texts[i]);update(); }
   void removeItem(int idx){ if(idx>=0&&idx<(int)_items.size()){_items.erase(_items.begin()+idx);if(_current>=idx&&_current>0)_current--;update();} }
   void clear()            { _items.clear();_current=-1;update(); }
@@ -873,7 +873,7 @@ public:
   QListWidgetItem* addItem(const QString& text){ auto*i=new QListWidgetItem(text);addItem(i);return i; }
   void addItem(QListWidgetItem* item)          { _items.push_back(item);update(); }
   void addItems(const QStringList& texts)      { for(auto&t:texts)addItem(t);update(); }
-  void insertItem(int row,QListWidgetItem* i)  { _items.insert(_items.begin()+min(row,(int)_items.size()),i);update(); }
+  void insertItem(int row,QListWidgetItem* i)  { int clamp=row<0?0:row>(int)_items.size()?(int)_items.size():row; _items.insert(clamp,i);update(); }
   void insertItem(int row,const QString& text) { insertItem(row,new QListWidgetItem(text)); }
   void insertItems(int row,const QStringList& ts){ for(int i=0;i<(int)ts.size();i++)insertItem(row+i,ts[i]);update(); }
   QListWidgetItem* takeItem(int row)           { if(row<0||row>=(int)_items.size())return nullptr;auto*i=_items[row];_items.erase(_items.begin()+row);update();return i; }
@@ -996,7 +996,7 @@ public:
   int  insertTab(int idx,QWidget* page,const QString& label){
     Tab t; t.page=page; t.label=label;
     if(idx<0||idx>=(int)_tabs.size()) _tabs.push_back(t);
-    else _tabs.insert(_tabs.begin()+idx,t);
+    else { int clamp=idx<0?0:idx>(int)_tabs.size()?(int)_tabs.size():idx; _tabs.insert(clamp,t); }
     if(_tabs.size()==1)setCurrentIndex(0);
     update(); return _tabs.size()-1;
   }
@@ -1418,7 +1418,7 @@ public:
   const char* metaClassName() const override { return "QSplitter"; }
 
   void addWidget(QWidget* w)           { _panels.push_back(w);_sizes.push_back(0);_reflow(); }
-  void insertWidget(int idx,QWidget* w){ _panels.insert(_panels.begin()+idx,w);_sizes.insert(_sizes.begin()+idx,0);_reflow(); }
+  void insertWidget(int idx,QWidget* w){ int clamp=idx<0?0:idx>(int)_panels.size()?(int)_panels.size():idx; _panels.insert(clamp,w);_sizes.insert(clamp,0);_reflow(); }
   QWidget* widget(int idx)       const { return idx>=0&&idx<(int)_panels.size()?_panels[idx]:nullptr; }
   int  count()                   const { return _panels.size(); }
   int  indexOf(QWidget* w)       const { for(int i=0;i<(int)_panels.size();i++)if(_panels[i]==w)return i;return -1; }
@@ -1494,7 +1494,7 @@ public:
   const char* metaClassName() const override { return "QStackedWidget"; }
 
   int  addWidget(QWidget* w)           { _pages.push_back(w);if(_pages.size()==1)setCurrentIndex(0);return _pages.size()-1; }
-  void insertWidget(int idx,QWidget* w){ _pages.insert(_pages.begin()+idx,w); }
+  void insertWidget(int idx,QWidget* w){ int clamp=idx<0?0:idx>(int)_pages.size()?(int)_pages.size():idx; _pages.insert(clamp,w); }
   void removeWidget(QWidget* w)        { _pages.erase(std::remove(_pages.begin(),_pages.end(),w),_pages.end()); }
   QWidget* widget(int idx)       const { return idx>=0&&idx<(int)_pages.size()?_pages[idx]:nullptr; }
   QWidget* currentWidget()       const { return widget(_current); }

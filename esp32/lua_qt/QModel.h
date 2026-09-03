@@ -146,7 +146,7 @@ public:
     for(auto* i:items) appendRow(i);
   }
   void insertRow(int row, QStandardItem* child) {
-    if(row<=(int)_children.size()) { _children.insert(_children.begin()+row,child); child->_parent=this; }
+    if(row<=(int)_children.size()) { _children.insert(row,child); child->_parent=this; }
   }
   void removeRow(int row) {
     if(row<(int)_children.size()){ delete _children[row]; _children.erase(_children.begin()+row); }
@@ -262,7 +262,7 @@ public:
     rowsInserted.emit(QModelIndex(),(int)_rows.size()-1,(int)_rows.size()-1);
   }
   void insertRow(int row, QStandardItem* i) {
-    if(row<=(int)_rows.size()) _rows.insert(_rows.begin()+row,{i});
+    if(row<=(int)_rows.size()) _rows.insert(row,{i});
     rowsInserted.emit(QModelIndex(),row,row);
   }
   bool removeRow(int row, const QModelIndex&=QModelIndex()) {

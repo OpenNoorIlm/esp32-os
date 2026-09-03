@@ -88,7 +88,7 @@ public:
 
   void append(const QSqlField& f)   { _fields.push_back(f); }
   void insert(int i, const QSqlField& f) {
-    if(i<=(int)_fields.size()) _fields.insert(_fields.begin()+i,f);
+    if(i<=(int)_fields.size()) _fields.insert(i,f);
   }
   void replace(int i, const QSqlField& f){
     if(i<(int)_fields.size()) _fields[i]=f;

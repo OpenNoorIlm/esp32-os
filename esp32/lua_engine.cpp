@@ -263,10 +263,10 @@ namespace LuaEngine {
 
 // ── esp32.sysinfo() / esp32.restart() ───────────────────────────────────
 static int l_sysinfo(lua_State* Ls) {
-  String out = capabilitiesReport();
-  out += "\nInstalled OS packages (/pkgs):\n" + PackageManager::listInstalled("/pkgs");
-  out += "\nInstalled apps (/apps):\n" + PackageManager::listInstalled("/apps");
-  lua_pushstring(Ls, out.c_str());
+  String sysOut = capabilitiesReport();
+  sysOut += "\nInstalled OS packages (/pkgs):\n" + PackageManager::listInstalled("/pkgs");
+  sysOut += "\nInstalled apps (/apps):\n" + PackageManager::listInstalled("/apps");
+  lua_pushstring(Ls, sysOut.c_str());
   return 1;
 }
 static int l_restart(lua_State* Ls) { ESP.restart(); return 0; } // does not return
@@ -612,30 +612,45 @@ static int w_emit(lua_State* Ls) {
   return 0;
 }
 
+// ── Type-safe widget dispatch using virtual type() — no dynamic_cast / no RTTI ──
+// ESP32 Arduino uses -fno-rtti, so dynamic_cast is illegal.
+// Widget::type() returns a String identifier; subclass pointers are safe to
+// static_cast once the type string matches because the inheritance is 1:1.
+
 // setText (Label, Button, TextInput, Badge)
 static int w_setText(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   const char* t = luaL_checkstring(Ls,2);
-  if (auto* l=dynamic_cast<NoorUI::Label*>(w))     l->setText(t);
-  else if (auto* b=dynamic_cast<NoorUI::Button*>(w)) b->setText(t);
-  else if (auto* ti=dynamic_cast<NoorUI::TextInput*>(w)) ti->setText(t);
-  else if (auto* ba=dynamic_cast<NoorUI::Badge*>(w)) ba->setText(t);
+  String wt = w->type();
+  if (wt == "Label")     static_cast<NoorUI::Label*>(w)->setText(t);
+  else if (wt == "Button")    static_cast<NoorUI::Button*>(w)->setText(t);
+  else if (wt == "TextInput" || wt == "PasswordInput")
+                              static_cast<NoorUI::TextInput*>(w)->setText(t);
+  else if (wt == "Badge")     static_cast<NoorUI::Badge*>(w)->setText(t);
   lua_pushvalue(Ls,1); return 1;
 }
 
 // getText
 static int w_getText(lua_State* Ls) {
   auto* w = checkWidget(Ls);
-  if (auto* ti=dynamic_cast<NoorUI::TextInput*>(w)) { lua_pushstring(Ls,ti->getText().c_str()); return 1; }
-  if (auto* l=dynamic_cast<NoorUI::Label*>(w)) { lua_pushstring(Ls,l->text.c_str()); return 1; }
+  String wt = w->type();
+  if (wt == "TextInput" || wt == "PasswordInput") {
+    lua_pushstring(Ls, static_cast<NoorUI::TextInput*>(w)->getText().c_str());
+    return 1;
+  }
+  if (wt == "Label") {
+    lua_pushstring(Ls, static_cast<NoorUI::Label*>(w)->text.c_str());
+    return 1;
+  }
   lua_pushstring(Ls,""); return 1;
 }
 
 // getValue (Slider, Spinner, ProgressBar)
 static int w_getValue(lua_State* Ls) {
   auto* w = checkWidget(Ls);
-  if (auto* s=dynamic_cast<NoorUI::Slider*>(w))   { lua_pushinteger(Ls,s->getValue()); return 1; }
-  if (auto* s=dynamic_cast<NoorUI::Spinner*>(w))  { lua_pushinteger(Ls,s->getValue()); return 1; }
+  String wt = w->type();
+  if (wt == "Slider")  { lua_pushinteger(Ls, static_cast<NoorUI::Slider*>(w)->getValue()); return 1; }
+  if (wt == "Spinner") { lua_pushinteger(Ls, static_cast<NoorUI::Spinner*>(w)->getValue()); return 1; }
   lua_pushinteger(Ls,0); return 1;
 }
 
@@ -643,32 +658,36 @@ static int w_getValue(lua_State* Ls) {
 static int w_setValue(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   int v = luaL_checkinteger(Ls,2);
-  if (auto* s=dynamic_cast<NoorUI::Slider*>(w))      s->setValue(v);
-  if (auto* s=dynamic_cast<NoorUI::Spinner*>(w))     s->value=v;
-  if (auto* p=dynamic_cast<NoorUI::ProgressBar*>(w)) p->setValue(v);
+  String wt = w->type();
+  if (wt == "Slider")      static_cast<NoorUI::Slider*>(w)->setValue(v);
+  if (wt == "Spinner")     static_cast<NoorUI::Spinner*>(w)->value = v;
+  if (wt == "ProgressBar") static_cast<NoorUI::ProgressBar*>(w)->setValue(v);
   lua_pushvalue(Ls,1); return 1;
 }
 
 // isChecked / setChecked
 static int w_isChecked(lua_State* Ls) {
   auto* w = checkWidget(Ls);
-  if (auto* c=dynamic_cast<NoorUI::CheckBox*>(w)) { lua_pushboolean(Ls,c->isChecked()); return 1; }
-  if (auto* s=dynamic_cast<NoorUI::Switch*>(w))   { lua_pushboolean(Ls,s->isOn()); return 1; }
+  String wt = w->type();
+  if (wt == "CheckBox") { lua_pushboolean(Ls, static_cast<NoorUI::CheckBox*>(w)->isChecked()); return 1; }
+  if (wt == "Switch")   { lua_pushboolean(Ls, static_cast<NoorUI::Switch*>(w)->isOn());        return 1; }
   lua_pushboolean(Ls,0); return 1;
 }
 static int w_setChecked(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   bool v = lua_toboolean(Ls,2);
-  if (auto* c=dynamic_cast<NoorUI::CheckBox*>(w)) c->setChecked(v);
-  if (auto* s=dynamic_cast<NoorUI::Switch*>(w))   s->setOn(v);
+  String wt = w->type();
+  if (wt == "CheckBox") static_cast<NoorUI::CheckBox*>(w)->setChecked(v);
+  if (wt == "Switch")   static_cast<NoorUI::Switch*>(w)->setOn(v);
   lua_pushvalue(Ls,1); return 1;
 }
 
 // currentText (ComboBox, ListBox)
 static int w_currentText(lua_State* Ls) {
   auto* w = checkWidget(Ls);
-  if (auto* c=dynamic_cast<NoorUI::ComboBox*>(w)) { lua_pushstring(Ls,c->currentText().c_str()); return 1; }
-  if (auto* l=dynamic_cast<NoorUI::ListBox*>(w))  { lua_pushstring(Ls,l->currentText().c_str()); return 1; }
+  String wt = w->type();
+  if (wt == "ComboBox") { lua_pushstring(Ls, static_cast<NoorUI::ComboBox*>(w)->currentText().c_str()); return 1; }
+  if (wt == "ListBox")  { lua_pushstring(Ls, static_cast<NoorUI::ListBox*>(w)->currentText().c_str());  return 1; }
   lua_pushstring(Ls,""); return 1;
 }
 
@@ -676,8 +695,9 @@ static int w_currentText(lua_State* Ls) {
 static int w_addItem(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   const char* item = luaL_checkstring(Ls,2);
-  if (auto* c=dynamic_cast<NoorUI::ComboBox*>(w)) c->addItem(item);
-  if (auto* l=dynamic_cast<NoorUI::ListBox*>(w))  l->addItem(item);
+  String wt = w->type();
+  if (wt == "ComboBox") static_cast<NoorUI::ComboBox*>(w)->addItem(item);
+  if (wt == "ListBox")  static_cast<NoorUI::ListBox*>(w)->addItem(item);
   lua_pushvalue(Ls,1); return 1;
 }
 
@@ -686,15 +706,17 @@ static int w_addToPage(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   int page = luaL_checkinteger(Ls,2)-1; // 1-indexed in Lua
   auto* child = checkWidget(Ls,3);
-  if (auto* t=dynamic_cast<NoorUI::TabWidget*>(w)) t->addToPage(page,child);
+  if (w->type() == "TabWidget") static_cast<NoorUI::TabWidget*>(w)->addToPage(page, child);
   lua_pushvalue(Ls,1); return 1;
 }
 
-// add (Panel, Container, ScrollArea)
+// add (Container subclasses: Panel, ScrollArea)
 static int w_add(lua_State* Ls) {
   auto* w = checkWidget(Ls);
   auto* child = checkWidget(Ls,2);
-  if (auto* p=dynamic_cast<NoorUI::Container*>(w)) p->add(child);
+  String wt = w->type();
+  if (wt == "Panel" || wt == "ScrollArea")
+    static_cast<NoorUI::Container*>(w)->add(child);
   lua_pushvalue(Ls,1); return 1;
 }
 
@@ -862,9 +884,6 @@ static int l_ui_app(lua_State* Ls) {
 }
 
 // Widget factories
-#define WIDGET_FACTORY(name, cls, ...) \
-static int l_ui_##name(lua_State* Ls) { pushWidget(Ls,new NoorUI::cls(__VA_ARGS__)); return 1; }
-
 static int l_ui_Button(lua_State* Ls)      { pushWidget(Ls,new NoorUI::Button(luaL_optstring(Ls,1,""))); return 1; }
 static int l_ui_Label(lua_State* Ls)       { pushWidget(Ls,new NoorUI::Label(luaL_optstring(Ls,1,""))); return 1; }
 static int l_ui_TextInput(lua_State* Ls)   { pushWidget(Ls,new NoorUI::TextInput(luaL_optstring(Ls,1,""))); return 1; }
@@ -1068,9 +1087,6 @@ static void registerNoorUI(lua_State* Ls) {
   lua_setglobal(Ls,"ui");
 }
 
-static const luaL_Reg vboxMeta[]  = {{"add",vbox_add},{"draw",vbox_draw},{NULL,NULL}};
-static const luaL_Reg hboxMeta[]  = {{"add",hbox_add},{"draw",hbox_draw},{NULL,NULL}};
-
 // ════════════════════════════════════════════════════════════════════════════
 
 static const luaL_Reg robotFuncs[] = {
@@ -1129,6 +1145,7 @@ void begin() {
   lua_pushcfunction(L, l_sysinfo); lua_setfield(L, -2, "sysinfo");
   lua_pushcfunction(L, l_restart); lua_setfield(L, -2, "restart");
   lua_setglobal(L, "esp32");
+
   // sensor.* — all hardware sensors accessible from Lua
   luaL_newlib(L, sensorFuncs); lua_setglobal(L, "sensor");
 

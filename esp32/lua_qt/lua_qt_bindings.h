@@ -30,6 +30,10 @@ extern "C" {
 #include "../lua_src/lua-master/lauxlib.h"
 }
 
+// Bring NoorQt types into global scope so QFile, QVariant, QTimer etc.
+// can be used bare inside the LuaQt namespace below without NoorQt:: prefix.
+using namespace NoorQt;
+
 namespace LuaQt {
 
 // ════════════════════════════════════════════════════════════════════════════
