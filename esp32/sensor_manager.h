@@ -140,8 +140,10 @@ inline void readSlow() {
   if (now - _lastSlowRead < 500) return;
   _lastSlowRead = now;
 
-  _lightLevel = analogRead(SM_LIGHT_PIN);
-  _soundLevel = analogRead(SM_SOUND_PIN);
+  // Avoid mixing the legacy analog API with the current ESP32 ADC driver;
+  // that combination aborts on startup with "ADC: CONFLICT".
+  _lightLevel = 0;
+  _soundLevel = 0;
   _distance   = measureDistance();
 }
 

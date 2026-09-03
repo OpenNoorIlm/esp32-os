@@ -1,0 +1,3 @@
+/home/bismillah/Downloads/esp32-os/esp32-ssh/build-linux/CMakeFiles/esp32-ssh.dir
+/home/bismillah/Downloads/esp32-os/esp32-ssh/build-linux/CMakeFiles/edit_cache.dir
+/home/bismillah/Downloads/esp32-os/esp32-ssh/build-linux/CMakeFiles/rebuild_cache.dir

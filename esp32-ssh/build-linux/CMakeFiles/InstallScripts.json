@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/bismillah/Downloads/esp32-os/esp32-ssh/build-linux/cmake_install.cmake"
+	],
+	"Parallel" : false
+}
