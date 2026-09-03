@@ -107,7 +107,7 @@ String playMacro(const String& name, int loops = 1) {
 String listMacros() {
   if (_macros.empty()) return "No macros recorded.\n";
   String out = "Saved macros:\n";
-  for (auto& kv : _macros) out += "  " + kv.first + " (" + kv.second.size() + " events)\n";
+  for (auto& kv : _macros) out += "  " + kv.first + " (" + String(kv.second.size()) + " events)\n";
   return out;
 }
 
